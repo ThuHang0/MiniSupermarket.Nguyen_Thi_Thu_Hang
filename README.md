@@ -19,20 +19,18 @@ Phía Client (Frontend): Windows Forms (.NET 8.0), thư viện System.Net.Http.J
 
 Công cụ hỗ trợ & Kiểm thử: Swagger UI (Swashbuckle.AspNetCore).
 
-📂 3. Cấu trúc Solution
-Hệ thống được chia thành 2 project đồng bộ:
-
-Plaintext
+## 📂 3. Cấu trúc Solution
+```text
 MiniSupermarketSystem/
 │
-├── MiniSupermarket.API/          # Backend
-│   ├── Controllers/              # CategoriesController, RolesController
-│   ├── Models/                   # Category.cs, Role.cs
-│   └── Program.cs                # Cấu hình Swagger và Middleware
+├── MiniSupermarket.API/          # Dự án Web API (Backend)
+│   ├── Controllers/              # Chứa CategoriesController (CRUD & Search)
+│   ├── Models/                   # Chứa lớp thực thể Category.cs
+│   └── Program.cs                # Cấu hình dịch vụ và Middleware
 │
-└── MiniSupermarket.WinForms/     # Frontend
-    ├── FormCategoryManagement.cs # Giao diện CRUD Danh mục
-    └── FormRoleManagement.cs     # Giao diện CRUD Vai trò
+└── MiniSupermarket.WinForms/     # Dự án Windows Forms (Frontend Client)
+    └── FormCategoryManagement.cs # Giao diện quản lý danh mục CRUD
+
 🚀 4. Kết quả Thực hiện & Hướng dẫn Kiểm thử
 Kết quả đạt được:
 
