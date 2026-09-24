@@ -1,56 +1,101 @@
-BÁO CÁO THỰC HÀNH
-Môn học: Lập trình Ứng dụng .NET Core (Mã môn: 229162)
+# BÁO CÁO THỰC HÀNH
 
-Buổi thực hành: Buổi 1 - Xây dựng Web API quản lý danh mục và kết nối WinForms Client (CRUD)
+Môn học: Lập trình Ứng dụng   
+Mã môn: 229162  
 
-🏗️ 1. Mô hình Kiến trúc Hệ thống
-Dự án áp dụng mô hình Client - Server phân tầng rõ rệt:
+Buổi thực hành: Buổi 2 - Bảo mật và phân quyền JWT cho Web API
 
-Backend (MiniSupermarket.API): Đóng vai trò máy chủ xử lý logic nghiệp vụ, cung cấp các RESTful API và quản lý dữ liệu (tạm thời sử dụng In-Memory).
+---
 
-Frontend (MiniSupermarket.WinForms): Đóng vai trò máy trạm (Client) cung cấp giao diện người dùng (UI), tương tác với Backend thông qua HttpClient để thao tác dữ liệu theo thời gian thực.
+## 🏗️ 1. Mô hình Kiến trúc Hệ thống
 
-🛠️ 2. Công nghệ Sử dụng
-Ngôn ngữ nền tảng: C# trên nền .NET 8.0
+Dự án tiếp tục áp dụng mô hình **Client - Server**, trong đó bổ sung cơ chế xác thực và phân quyền bằng **JWT (JSON Web Token)**.
 
-Phía Server (Backend): ASP.NET Core Web API, Controllers, LINQ.
+### Backend - MiniSupermarket.API
 
-Phía Client (Frontend): Windows Forms (.NET 8.0), thư viện System.Net.Http.Json hỗ trợ gọi API và giải tuần tự hóa JSON.
+Đóng vai trò máy chủ, chịu trách nhiệm:
 
-Công cụ hỗ trợ & Kiểm thử: Swagger UI (Swashbuckle.AspNetCore).
+- Cung cấp RESTful Web API.
+- Xử lý đăng nhập và cấp phát JWT Token.
+- Xác thực người dùng bằng JWT Bearer Authentication.
+- Phân quyền người dùng theo Role.
+- Bảo vệ các API bằng `[Authorize]`.
+- Quản lý dữ liệu danh mục sản phẩm bằng In-Memory.
+- Cung cấp Swagger UI để kiểm thử API.
+
+### Frontend - MiniSupermarket.WinForms
+
+Đóng vai trò Client, chịu trách nhiệm:
+
+- Cung cấp giao diện đăng nhập.
+- Gửi thông tin tài khoản đến Web API.
+- Nhận và lưu JWT Token sau khi đăng nhập thành công.
+- Lưu Role của người dùng.
+- Gửi JWT Token trong HTTP Header khi gọi API.
+- Thực hiện các chức năng quản lý danh mục sản phẩm.
+
+---
+
+## 🛠️ 2. Công nghệ sử dụng
+
+### Ngôn ngữ và nền tảng
+
+- C#
+- .NET 8.0
+
+### Phía Server - Backend
+
+- ASP.NET Core Web API
+- JWT Authentication
+- JWT Bearer Authentication
+- Authorization / Role-based Authorization
+- Controllers
+- LINQ
+- Data Annotations
+- Swagger / OpenAPI
+
+### Phía Client - Frontend
+
+- Windows Forms (.NET 8.0)
+- `HttpClient`
+- `System.Net.Http.Json`
+- `System.Net.Http.Headers`
+- `System.Text.Json`
+- `async/await`
+
+### Bảo mật
+
+- JSON Web Token (JWT)
+- Bearer Authentication
+- Role-based Authorization
+- `Microsoft.AspNetCore.Authentication.JwtBearer`
+- `System.IdentityModel.Tokens.Jwt`
+
+---
 
 ## 📂 3. Cấu trúc Solution
+
 ```text
 MiniSupermarketSystem/
 │
-├── MiniSupermarket.API/          # Dự án Web API (Backend)
-│   ├── Controllers/              # Chứa CategoriesController (CRUD & Search)
-│   ├── Models/                   # Chứa lớp thực thể Category.cs
-│   └── Program.cs                # Cấu hình dịch vụ và Middleware
+├── MiniSupermarket.API/
+│   │
+│   ├── Controllers/
+│   │   ├── AuthController.cs
+│   │   └── CategoriesController.cs
+│   │
+│   ├── Models/
+│   │   └── Category.cs
+│   │
+│   └── Program.cs
 │
-└── MiniSupermarket.WinForms/     # Dự án Windows Forms (Frontend Client)
-    └── FormCategoryManagement.cs # Giao diện quản lý danh mục CRUD
-
-🚀 4. Kết quả Thực hiện & Hướng dẫn Kiểm thử
-Kết quả đạt được:
-
-Đã xây dựng thành công toàn bộ Backend với 2 Controller (Categories và Roles) đáp ứng đầy đủ các phương thức HTTP cơ bản: GET, POST, PUT, DELETE và chức năng Tìm kiếm (Search qua Query String).
-
-Tích hợp thành công cấu hình Swagger UI để kiểm thử độc lập API.
-
-Xây dựng hoàn chỉnh 2 giao diện quản lý trên WinForms, sử dụng cơ chế xử lý bất đồng bộ (async/await) với HttpClient để truyền tải dữ liệu JSON lên DataGridView mượt mà, không giật lag.
-
-Hướng dẫn chạy dự án:
-
-Khởi chạy MiniSupermarket.API (Set as Startup Project) trước. Kiểm tra các endpoint trên trình duyệt thông qua Swagger UI.
-
-Kiểm tra cổng (Port) sinh ra tự động (ví dụ: https://localhost:7123) và cập nhật vào thuộc tính BaseAddress của biến _client trong project WinForms.
-
-Khởi chạy tiếp MiniSupermarket.WinForms (Start new instance) để tiến hành nghiệm thu các thao tác Thêm, Sửa, Xóa, Tìm kiếm trực tiếp trên giao diện phần mềm.
-
-👨‍💻 5. Tác giả
-Họ tên sinh viên: Nguyễn Thị Thu Hằng
-
+└── MiniSupermarket.WinForms/
+    │
+    ├── FormLogin.cs
+    ├── FormCategoryManagement.cs
+    ├── SessionManager.cs
+    └── Program.cs
+4. Tác giả
+Họ và tên: Nguyễn Thị Thu Hằng
 Mã sinh viên: 2124110115
-
 Lớp học phần: CCQ2411D
