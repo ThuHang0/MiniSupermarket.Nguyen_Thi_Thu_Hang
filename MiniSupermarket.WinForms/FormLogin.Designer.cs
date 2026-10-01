@@ -83,6 +83,7 @@
             pnlLogin.Name = "pnlLogin";
             pnlLogin.Size = new Size(350, 420);
             pnlLogin.TabIndex = 0;
+            pnlLogin.Paint += pnlLogin_Paint;
             // 
             // lblLogo
             // 

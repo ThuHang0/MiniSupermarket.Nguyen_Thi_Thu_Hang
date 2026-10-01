@@ -69,9 +69,13 @@ namespace MiniSupermarket.WinForms
                     FormCategoryManagement mainForm =
                         new FormCategoryManagement();
 
+                    FormCustomerManagement customerManagement =
+                        new FormCustomerManagement();
+
                     this.Hide();
-                    mainForm.ShowDialog();
-                    this.Close();
+                    mainForm.Show();
+                    customerManagement.Show();
+                    //this.Close();
                 }
                 else
                 {
@@ -93,6 +97,11 @@ namespace MiniSupermarket.WinForms
         }
 
         private void pnlMain_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void pnlLogin_Paint(object sender, PaintEventArgs e)
         {
 
         }
