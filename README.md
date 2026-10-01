@@ -1,101 +1,103 @@
-# BÁO CÁO THỰC HÀNH
+BÁO CÁO THỰC HÀNH
+Môn học: Lập trình Ứng dụng
 
-Môn học: Lập trình Ứng dụng   
-Mã môn: 229162  
+Mã môn: 229162
 
-Buổi thực hành: Buổi 2 - Bảo mật và phân quyền JWT cho Web API
+Buổi thực hành: Buổi 3 - Tích hợp SQL Server và Entity Framework Core Code-First & Quản lý Khách hàng
 
----
+🏗️️ 1. Mô hình Kiến trúc Hệ thống
+Dự án tiếp tục áp dụng mô hình Client - Server, nâng cấp cơ chế lưu trữ từ bộ nhớ tạm (In-Memory) sang hệ quản trị cơ sở dữ liệu quan hệ Microsoft SQL Server.
 
-## 🏗️ 1. Mô hình Kiến trúc Hệ thống
+Backend - MiniSupermarket.API
+Đóng vai trò máy chủ trung tâm, chịu trách nhiệm:
 
-Dự án tiếp tục áp dụng mô hình **Client - Server**, trong đó bổ sung cơ chế xác thực và phân quyền bằng **JWT (JSON Web Token)**.
+Cung cấp RESTful Web API cho các phân hệ Danh mục (Categories), Sản phẩm (Products) và Khách hàng (Customers).
 
-### Backend - MiniSupermarket.API
+Kết nối và tương tác với SQL Server thông qua ORM Entity Framework Core.
 
-Đóng vai trò máy chủ, chịu trách nhiệm:
+Quản lý cấu trúc cơ sở dữ liệu bằng cơ chế Code-First Migrations.
 
-- Cung cấp RESTful Web API.
-- Xử lý đăng nhập và cấp phát JWT Token.
-- Xác thực người dùng bằng JWT Bearer Authentication.
-- Phân quyền người dùng theo Role.
-- Bảo vệ các API bằng `[Authorize]`.
-- Quản lý dữ liệu danh mục sản phẩm bằng In-Memory.
-- Cung cấp Swagger UI để kiểm thử API.
+Tự động nạp dữ liệu mồi (Data Seeding) cho hệ thống.
 
-### Frontend - MiniSupermarket.WinForms
+Xử lý các truy vấn CRUD bất đồng bộ (async/await) kết hợp LINQ.
 
-Đóng vai trò Client, chịu trách nhiệm:
+Cung cấp Swagger UI để kiểm thử API trực tiếp.
 
-- Cung cấp giao diện đăng nhập.
-- Gửi thông tin tài khoản đến Web API.
-- Nhận và lưu JWT Token sau khi đăng nhập thành công.
-- Lưu Role của người dùng.
-- Gửi JWT Token trong HTTP Header khi gọi API.
-- Thực hiện các chức năng quản lý danh mục sản phẩm.
+Frontend - MiniSupermarket.WinForms
+Đóng vai trò Client giao tiếp với người dùng, chịu trách nhiệm:
 
----
+Cung cấp giao diện trực quan quản lý danh mục và thông tin khách hàng (FormCustomerManagement).
 
-## 🛠️ 2. Công nghệ sử dụng
+Gọi các API Backend thông qua HttpClient (hỗ trợ GetFromJsonAsync, PostAsJsonAsync, PutAsJsonAsync, DeleteAsync).
 
-### Ngôn ngữ và nền tảng
+Xử lý phản hồi từ server, ánh xạ dữ liệu lên DataGridView và cập nhật UI.
 
-- C#
-- .NET 8.0
+🛠️ 2. Công nghệ sử dụng
+Ngôn ngữ và nền tảng
+C#
 
-### Phía Server - Backend
+.NET 8.0
 
-- ASP.NET Core Web API
-- JWT Authentication
-- JWT Bearer Authentication
-- Authorization / Role-based Authorization
-- Controllers
-- LINQ
-- Data Annotations
-- Swagger / OpenAPI
+Phía Server - Backend
+ASP.NET Core Web API
 
-### Phía Client - Frontend
+Entity Framework Core (Microsoft.EntityFrameworkCore.SqlServer, Tools, Design)
 
-- Windows Forms (.NET 8.0)
-- `HttpClient`
-- `System.Net.Http.Json`
-- `System.Net.Http.Headers`
-- `System.Text.Json`
-- `async/await`
+EF Core Migrations (Add-Migration, Update-Database)
 
-### Bảo mật
+Data Annotations (Validation & Schema Mapping)
 
-- JSON Web Token (JWT)
-- Bearer Authentication
-- Role-based Authorization
-- `Microsoft.AspNetCore.Authentication.JwtBearer`
-- `System.IdentityModel.Tokens.Jwt`
+Dependency Injection (DI) cho DbContext
 
----
+LINQ & Asynchronous Programming (async/await, Task)
 
-## 📂 3. Cấu trúc Solution
+Swagger / OpenAPI
 
-```text
+Cơ sở dữ liệu
+Microsoft SQL Server
+
+SQL Server Management Studio (SSMS)
+
+Phía Client - Frontend
+Windows Forms (.NET 8.0)
+
+HttpClient
+
+System.Net.Http.Json
+
+📂 3. Cấu trúc Solution
+Plaintext
 MiniSupermarketSystem/
 │
 ├── MiniSupermarket.API/
 │   │
 │   ├── Controllers/
-│   │   ├── AuthController.cs
-│   │   └── CategoriesController.cs
+│   │   ├── CategoriesController.cs
+│   │   └── CustomersController.cs
 │   │
 │   ├── Models/
-│   │   └── Category.cs
+│   │   ├── Category.cs
+│   │   ├── Product.cs
+│   │   └── Customer.cs
 │   │
+│   ├── Data/
+│   │   └── SupermarketDbContext.cs
+│   │
+│   ├── Migrations/
+│   │   └── (Chứa các file sinh tự động từ Add-Migration)
+│   │
+│   ├── appsettings.json
 │   └── Program.cs
 │
 └── MiniSupermarket.WinForms/
     │
-    ├── FormLogin.cs
     ├── FormCategoryManagement.cs
-    ├── SessionManager.cs
+    ├── FormCustomerManagement.cs
+    ├── FormCustomerManagement.Designer.cs
     └── Program.cs
-4. Tác giả
+👨‍💻 4. Tác giả
 Họ và tên: Nguyễn Thị Thu Hằng
+
 Mã sinh viên: 2124110115
+
 Lớp học phần: CCQ2411D
