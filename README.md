@@ -1,55 +1,102 @@
 BÁO CÁO THỰC HÀNH
-Môn học: Lập trình Ứng dụng .NET Core (Mã môn: 229162)
+Môn học: Lập trình Ứng dụng
 
-Buổi thực hành: Buổi 1 - Xây dựng Web API quản lý danh mục và kết nối WinForms Client (CRUD)
+Mã môn: 229162
 
-🏗️ 1. Mô hình Kiến trúc Hệ thống
-Dự án áp dụng mô hình Client - Server phân tầng rõ rệt:
+Buổi thực hành: Buổi 3 - Tích hợp SQL Server và Entity Framework Core Code-First & Quản lý Khách hàng
 
-Backend (MiniSupermarket.API): Đóng vai trò máy chủ xử lý logic nghiệp vụ, cung cấp các RESTful API và quản lý dữ liệu (tạm thời sử dụng In-Memory).
+🏗️️ 1. Mô hình Kiến trúc Hệ thống
+Dự án tiếp tục áp dụng mô hình Client - Server, nâng cấp cơ chế lưu trữ từ bộ nhớ tạm (In-Memory) sang hệ quản trị cơ sở dữ liệu quan hệ Microsoft SQL Server.
 
-Frontend (MiniSupermarket.WinForms): Đóng vai trò máy trạm (Client) cung cấp giao diện người dùng (UI), tương tác với Backend thông qua HttpClient để thao tác dữ liệu theo thời gian thực.
+Backend - MiniSupermarket.API
+Đóng vai trò máy chủ trung tâm, chịu trách nhiệm:
 
-🛠️ 2. Công nghệ Sử dụng
-Ngôn ngữ nền tảng: C# trên nền .NET 8.0
+Cung cấp RESTful Web API cho các phân hệ Danh mục (Categories), Sản phẩm (Products) và Khách hàng (Customers).
 
-Phía Server (Backend): ASP.NET Core Web API, Controllers, LINQ.
+Kết nối và tương tác với SQL Server thông qua ORM Entity Framework Core.
 
-Phía Client (Frontend): Windows Forms (.NET 8.0), thư viện System.Net.Http.Json hỗ trợ gọi API và giải tuần tự hóa JSON.
+Quản lý cấu trúc cơ sở dữ liệu bằng cơ chế Code-First Migrations.
 
-Công cụ hỗ trợ & Kiểm thử: Swagger UI (Swashbuckle.AspNetCore).
+Tự động nạp dữ liệu mồi (Data Seeding) cho hệ thống.
 
-## 📂 3. Cấu trúc Solution
-```text
+Xử lý các truy vấn CRUD bất đồng bộ (async/await) kết hợp LINQ.
+
+Cung cấp Swagger UI để kiểm thử API trực tiếp.
+
+Frontend - MiniSupermarket.WinForms
+Đóng vai trò Client giao tiếp với người dùng, chịu trách nhiệm:
+
+Cung cấp giao diện trực quan quản lý danh mục và thông tin khách hàng (FormCustomerManagement).
+
+Gọi các API Backend thông qua HttpClient (hỗ trợ GetFromJsonAsync, PostAsJsonAsync, PutAsJsonAsync, DeleteAsync).
+
+Xử lý phản hồi từ server, ánh xạ dữ liệu lên DataGridView và cập nhật UI.
+
+🛠️ 2. Công nghệ sử dụng
+Ngôn ngữ và nền tảng
+C#
+
+.NET 8.0
+
+Phía Server - Backend
+ASP.NET Core Web API
+
+Entity Framework Core (Microsoft.EntityFrameworkCore.SqlServer, Tools, Design)
+
+EF Core Migrations (Add-Migration, Update-Database)
+
+Data Annotations (Validation & Schema Mapping)
+
+Dependency Injection (DI) cho DbContext
+
+LINQ & Asynchronous Programming (async/await, Task)
+
+Swagger / OpenAPI
+
+Cơ sở dữ liệu
+Microsoft SQL Server
+
+SQL Server Management Studio (SSMS)
+
+Phía Client - Frontend
+Windows Forms (.NET 8.0)
+
+HttpClient
+
+System.Net.Http.Json
+
+📂 3. Cấu trúc Solution
+Plaintext
 MiniSupermarketSystem/
 │
-├── MiniSupermarket.API/          # Dự án Web API (Backend)
-│   ├── Controllers/              # Chứa CategoriesController (CRUD & Search)
-│   ├── Models/                   # Chứa lớp thực thể Category.cs
-│   └── Program.cs                # Cấu hình dịch vụ và Middleware
+├── MiniSupermarket.API/
+│   │
+│   ├── Controllers/
+│   │   ├── CategoriesController.cs
+│   │   └── CustomersController.cs
+│   │
+│   ├── Models/
+│   │   ├── Category.cs
+│   │   ├── Product.cs
+│   │   └── Customer.cs
+│   │
+│   ├── Data/
+│   │   └── SupermarketDbContext.cs
+│   │
+│   ├── Migrations/
+│   │   └── (Chứa các file sinh tự động từ Add-Migration)
+│   │
+│   ├── appsettings.json
+│   └── Program.cs
 │
-└── MiniSupermarket.WinForms/     # Dự án Windows Forms (Frontend Client)
-    └── FormCategoryManagement.cs # Giao diện quản lý danh mục CRUD
-
-🚀 4. Kết quả Thực hiện & Hướng dẫn Kiểm thử
-Kết quả đạt được:
-
-Đã xây dựng thành công toàn bộ Backend với 2 Controller (Categories và Roles) đáp ứng đầy đủ các phương thức HTTP cơ bản: GET, POST, PUT, DELETE và chức năng Tìm kiếm (Search qua Query String).
-
-Tích hợp thành công cấu hình Swagger UI để kiểm thử độc lập API.
-
-Xây dựng hoàn chỉnh 2 giao diện quản lý trên WinForms, sử dụng cơ chế xử lý bất đồng bộ (async/await) với HttpClient để truyền tải dữ liệu JSON lên DataGridView mượt mà, không giật lag.
-
-Hướng dẫn chạy dự án:
-
-Khởi chạy MiniSupermarket.API (Set as Startup Project) trước. Kiểm tra các endpoint trên trình duyệt thông qua Swagger UI.
-
-Kiểm tra cổng (Port) sinh ra tự động (ví dụ: https://localhost:7123) và cập nhật vào thuộc tính BaseAddress của biến _client trong project WinForms.
-
-Khởi chạy tiếp MiniSupermarket.WinForms (Start new instance) để tiến hành nghiệm thu các thao tác Thêm, Sửa, Xóa, Tìm kiếm trực tiếp trên giao diện phần mềm.
-
-👨‍💻 5. Tác giả
-Họ tên sinh viên: Nguyễn Thị Thu Hằng
+└── MiniSupermarket.WinForms/
+    │
+    ├── FormCategoryManagement.cs
+    ├── FormCustomerManagement.cs
+    ├── FormCustomerManagement.Designer.cs
+    └── Program.cs
+👨‍💻 4. Tác giả
+Họ và tên: Nguyễn Thị Thu Hằng
 
 Mã sinh viên: 2124110115
 

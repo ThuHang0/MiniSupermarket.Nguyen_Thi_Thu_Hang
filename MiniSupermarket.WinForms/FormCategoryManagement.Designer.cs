@@ -28,273 +28,266 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.gbSearch = new System.Windows.Forms.GroupBox();
-            this.btnLoad = new System.Windows.Forms.Button();
-            this.btnSearch = new System.Windows.Forms.Button();
-            this.txtKeyword = new System.Windows.Forms.TextBox();
-            this.gbList = new System.Windows.Forms.GroupBox();
-            this.dgvCategories = new System.Windows.Forms.DataGridView();
-            this.colCategoryId = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colCategoryName = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colDescription = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.gbDetails = new System.Windows.Forms.GroupBox();
-            this.btnDelete = new System.Windows.Forms.Button();
-            this.btnUpdate = new System.Windows.Forms.Button();
-            this.btnAdd = new System.Windows.Forms.Button();
-            this.txtDescription = new System.Windows.Forms.TextBox();
-            this.lblDescription = new System.Windows.Forms.Label();
-            this.txtCategoryName = new System.Windows.Forms.TextBox();
-            this.lblCategoryName = new System.Windows.Forms.Label();
-            this.txtId = new System.Windows.Forms.TextBox();
-            this.lblId = new System.Windows.Forms.Label();
-            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
-            this.toolStripStatusLabelReady = new System.Windows.Forms.ToolStripStatusLabel();
-            this.toolStripStatusLabelUrl = new System.Windows.Forms.ToolStripStatusLabel();
-
-            this.gbSearch.SuspendLayout();
-            this.gbList.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvCategories)).BeginInit();
-            this.gbDetails.SuspendLayout();
-            this.statusStrip1.SuspendLayout();
-            this.SuspendLayout();
+            gbSearch = new GroupBox();
+            btnLoad = new Button();
+            btnSearch = new Button();
+            txtKeyword = new TextBox();
+            gbList = new GroupBox();
+            dgvCategories = new DataGridView();
+            colCategoryId = new DataGridViewTextBoxColumn();
+            colCategoryName = new DataGridViewTextBoxColumn();
+            colDescription = new DataGridViewTextBoxColumn();
+            gbDetails = new GroupBox();
+            btnDelete = new Button();
+            btnUpdate = new Button();
+            btnAdd = new Button();
+            txtDescription = new TextBox();
+            lblDescription = new Label();
+            txtCategoryName = new TextBox();
+            lblCategoryName = new Label();
+            txtId = new TextBox();
+            lblId = new Label();
+            statusStrip1 = new StatusStrip();
+            toolStripStatusLabelReady = new ToolStripStatusLabel();
+            toolStripStatusLabelUrl = new ToolStripStatusLabel();
+            gbSearch.SuspendLayout();
+            gbList.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)dgvCategories).BeginInit();
+            gbDetails.SuspendLayout();
+            statusStrip1.SuspendLayout();
+            SuspendLayout();
             // 
             // gbSearch
             // 
-            this.gbSearch.Controls.Add(this.btnLoad);
-            this.gbSearch.Controls.Add(this.btnSearch);
-            this.gbSearch.Controls.Add(this.txtKeyword);
-            this.gbSearch.Location = new System.Drawing.Point(12, 12);
-            this.gbSearch.Name = "gbSearch";
-            this.gbSearch.Size = new System.Drawing.Size(760, 60);
-            this.gbSearch.TabIndex = 0;
-            this.gbSearch.TabStop = false;
-            this.gbSearch.Text = "Tìm kiếm";
+            gbSearch.Controls.Add(btnLoad);
+            gbSearch.Controls.Add(btnSearch);
+            gbSearch.Controls.Add(txtKeyword);
+            gbSearch.Location = new Point(12, 12);
+            gbSearch.Name = "gbSearch";
+            gbSearch.Size = new Size(760, 60);
+            gbSearch.TabIndex = 0;
+            gbSearch.TabStop = false;
+            gbSearch.Text = "Tìm kiếm";
+            gbSearch.Enter += gbSearch_Enter;
             // 
             // btnLoad
             // 
-            this.btnLoad.Location = new System.Drawing.Point(420, 22);
-            this.btnLoad.Name = "btnLoad";
-            this.btnLoad.Size = new System.Drawing.Size(80, 25);
-            this.btnLoad.TabIndex = 2;
-            this.btnLoad.Text = "Tải lại";
-            this.btnLoad.UseVisualStyleBackColor = true;
-            this.btnLoad.Click += new System.EventHandler(this.btnLoad_Click);
+            btnLoad.Location = new Point(420, 22);
+            btnLoad.Name = "btnLoad";
+            btnLoad.Size = new Size(80, 25);
+            btnLoad.TabIndex = 2;
+            btnLoad.Text = "Tải lại";
+            btnLoad.UseVisualStyleBackColor = true;
+            btnLoad.Click += btnLoad_Click;
             // 
             // btnSearch
             // 
-            this.btnSearch.Location = new System.Drawing.Point(330, 22);
-            this.btnSearch.Name = "btnSearch";
-            this.btnSearch.Size = new System.Drawing.Size(80, 25);
-            this.btnSearch.TabIndex = 1;
-            this.btnSearch.Text = "Tìm kiếm";
-            this.btnSearch.UseVisualStyleBackColor = true;
-            this.btnSearch.Click += new System.EventHandler(this.btnSearch_Click);
+            btnSearch.Location = new Point(330, 22);
+            btnSearch.Name = "btnSearch";
+            btnSearch.Size = new Size(80, 25);
+            btnSearch.TabIndex = 1;
+            btnSearch.Text = "Tìm kiếm";
+            btnSearch.UseVisualStyleBackColor = true;
+            btnSearch.Click += btnSearch_Click;
             // 
             // txtKeyword
             // 
-            this.txtKeyword.Location = new System.Drawing.Point(15, 24);
-            this.txtKeyword.Name = "txtKeyword";
-            this.txtKeyword.PlaceholderText = "Nhập từ khóa...";
-            this.txtKeyword.Size = new System.Drawing.Size(300, 23);
-            this.txtKeyword.TabIndex = 0;
+            txtKeyword.Location = new Point(15, 24);
+            txtKeyword.Name = "txtKeyword";
+            txtKeyword.PlaceholderText = "Nhập từ khóa...";
+            txtKeyword.Size = new Size(300, 23);
+            txtKeyword.TabIndex = 0;
             // 
             // gbList
             // 
-            this.gbList.Controls.Add(this.dgvCategories);
-            this.gbList.Location = new System.Drawing.Point(12, 78);
-            this.gbList.Name = "gbList";
-            this.gbList.Size = new System.Drawing.Size(460, 340);
-            this.gbList.TabIndex = 1;
-            this.gbList.TabStop = false;
-            this.gbList.Text = "Danh sách Nhóm hàng";
+            gbList.Controls.Add(dgvCategories);
+            gbList.Location = new Point(12, 78);
+            gbList.Name = "gbList";
+            gbList.Size = new Size(460, 340);
+            gbList.TabIndex = 1;
+            gbList.TabStop = false;
+            gbList.Text = "Danh sách Nhóm hàng";
             // 
             // dgvCategories
             // 
-            this.dgvCategories.AllowUserToAddRows = false;
-            this.dgvCategories.AllowUserToDeleteRows = false;
-            this.dgvCategories.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            this.dgvCategories.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgvCategories.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.colCategoryId,
-            this.colCategoryName,
-            this.colDescription});
-            this.dgvCategories.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dgvCategories.Location = new System.Drawing.Point(3, 19);
-            this.dgvCategories.Name = "dgvCategories";
-            this.dgvCategories.ReadOnly = true;
-            this.dgvCategories.RowHeadersWidth = 51;
-            this.dgvCategories.RowTemplate.Height = 25;
-            this.dgvCategories.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvCategories.Size = new System.Drawing.Size(454, 318);
-            this.dgvCategories.TabIndex = 0;
-            this.dgvCategories.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvCategories_CellClick);
+            dgvCategories.AllowUserToAddRows = false;
+            dgvCategories.AllowUserToDeleteRows = false;
+            dgvCategories.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dgvCategories.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dgvCategories.Columns.AddRange(new DataGridViewColumn[] { colCategoryId, colCategoryName, colDescription });
+            dgvCategories.Dock = DockStyle.Fill;
+            dgvCategories.Location = new Point(3, 19);
+            dgvCategories.Name = "dgvCategories";
+            dgvCategories.ReadOnly = true;
+            dgvCategories.RowHeadersWidth = 51;
+            dgvCategories.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvCategories.Size = new Size(454, 318);
+            dgvCategories.TabIndex = 0;
+            dgvCategories.CellClick += dgvCategories_CellClick;
             // 
             // colCategoryId
             // 
-            this.colCategoryId.DataPropertyName = "CategoryId";
-            this.colCategoryId.HeaderText = "Mã ID";
-            this.colCategoryId.Name = "colCategoryId";
-            this.colCategoryId.ReadOnly = true;
+            colCategoryId.DataPropertyName = "CategoryId";
+            colCategoryId.HeaderText = "Mã ID";
+            colCategoryId.Name = "colCategoryId";
+            colCategoryId.ReadOnly = true;
             // 
             // colCategoryName
             // 
-            this.colCategoryName.DataPropertyName = "CategoryName";
-            this.colCategoryName.HeaderText = "Tên Nhóm hàng";
-            this.colCategoryName.Name = "colCategoryName";
-            this.colCategoryName.ReadOnly = true;
+            colCategoryName.DataPropertyName = "CategoryName";
+            colCategoryName.HeaderText = "Tên Nhóm hàng";
+            colCategoryName.Name = "colCategoryName";
+            colCategoryName.ReadOnly = true;
             // 
             // colDescription
             // 
-            this.colDescription.DataPropertyName = "Description";
-            this.colDescription.HeaderText = "Mô Tả";
-            this.colDescription.Name = "colDescription";
-            this.colDescription.ReadOnly = true;
+            colDescription.DataPropertyName = "Description";
+            colDescription.HeaderText = "Mô Tả";
+            colDescription.Name = "colDescription";
+            colDescription.ReadOnly = true;
             // 
             // gbDetails
             // 
-            this.gbDetails.Controls.Add(this.btnDelete);
-            this.gbDetails.Controls.Add(this.btnUpdate);
-            this.gbDetails.Controls.Add(this.btnAdd);
-            this.gbDetails.Controls.Add(this.txtDescription);
-            this.gbDetails.Controls.Add(this.lblDescription);
-            this.gbDetails.Controls.Add(this.txtCategoryName);
-            this.gbDetails.Controls.Add(this.lblCategoryName);
-            this.gbDetails.Controls.Add(this.txtId);
-            this.gbDetails.Controls.Add(this.lblId);
-            this.gbDetails.Location = new System.Drawing.Point(478, 78);
-            this.gbDetails.Name = "gbDetails";
-            this.gbDetails.Size = new System.Drawing.Size(294, 340);
-            this.gbDetails.TabIndex = 2;
-            this.gbDetails.TabStop = false;
-            this.gbDetails.Text = "Thông tin Nhóm hàng";
+            gbDetails.Controls.Add(btnDelete);
+            gbDetails.Controls.Add(btnUpdate);
+            gbDetails.Controls.Add(btnAdd);
+            gbDetails.Controls.Add(txtDescription);
+            gbDetails.Controls.Add(lblDescription);
+            gbDetails.Controls.Add(txtCategoryName);
+            gbDetails.Controls.Add(lblCategoryName);
+            gbDetails.Controls.Add(txtId);
+            gbDetails.Controls.Add(lblId);
+            gbDetails.Location = new Point(478, 78);
+            gbDetails.Name = "gbDetails";
+            gbDetails.Size = new Size(294, 340);
+            gbDetails.TabIndex = 2;
+            gbDetails.TabStop = false;
+            gbDetails.Text = "Thông tin Nhóm hàng";
             // 
             // btnDelete
             // 
-            this.btnDelete.Location = new System.Drawing.Point(204, 273);
-            this.btnDelete.Name = "btnDelete";
-            this.btnDelete.Size = new System.Drawing.Size(75, 30);
-            this.btnDelete.TabIndex = 8;
-            this.btnDelete.Text = "Xóa";
-            this.btnDelete.UseVisualStyleBackColor = true;
-            this.btnDelete.Click += new System.EventHandler(this.btnDelete_Click);
+            btnDelete.Location = new Point(204, 273);
+            btnDelete.Name = "btnDelete";
+            btnDelete.Size = new Size(75, 30);
+            btnDelete.TabIndex = 8;
+            btnDelete.Text = "Xóa";
+            btnDelete.UseVisualStyleBackColor = true;
+            btnDelete.Click += btnDelete_Click;
             // 
             // btnUpdate
             // 
-            this.btnUpdate.Location = new System.Drawing.Point(109, 273);
-            this.btnUpdate.Name = "btnUpdate";
-            this.btnUpdate.Size = new System.Drawing.Size(75, 30);
-            this.btnUpdate.TabIndex = 7;
-            this.btnUpdate.Text = "Cập nhật";
-            this.btnUpdate.UseVisualStyleBackColor = true;
-            this.btnUpdate.Click += new System.EventHandler(this.btnUpdate_Click);
+            btnUpdate.Location = new Point(109, 273);
+            btnUpdate.Name = "btnUpdate";
+            btnUpdate.Size = new Size(75, 30);
+            btnUpdate.TabIndex = 7;
+            btnUpdate.Text = "Cập nhật";
+            btnUpdate.UseVisualStyleBackColor = true;
+            btnUpdate.Click += btnUpdate_Click;
             // 
             // btnAdd
             // 
-            this.btnAdd.Location = new System.Drawing.Point(15, 273);
-            this.btnAdd.Name = "btnAdd";
-            this.btnAdd.Size = new System.Drawing.Size(75, 30);
-            this.btnAdd.TabIndex = 6;
-            this.btnAdd.Text = "Thêm mới";
-            this.btnAdd.UseVisualStyleBackColor = true;
-            this.btnAdd.Click += new System.EventHandler(this.btnAdd_Click);
+            btnAdd.Location = new Point(15, 273);
+            btnAdd.Name = "btnAdd";
+            btnAdd.Size = new Size(75, 30);
+            btnAdd.TabIndex = 6;
+            btnAdd.Text = "Thêm mới";
+            btnAdd.UseVisualStyleBackColor = true;
+            btnAdd.Click += btnAdd_Click;
             // 
             // txtDescription
             // 
-            this.txtDescription.Location = new System.Drawing.Point(15, 172);
-            this.txtDescription.Multiline = true;
-            this.txtDescription.Name = "txtDescription";
-            this.txtDescription.Size = new System.Drawing.Size(264, 80);
-            this.txtDescription.TabIndex = 5;
+            txtDescription.Location = new Point(15, 172);
+            txtDescription.Multiline = true;
+            txtDescription.Name = "txtDescription";
+            txtDescription.Size = new Size(264, 80);
+            txtDescription.TabIndex = 5;
             // 
             // lblDescription
             // 
-            this.lblDescription.AutoSize = true;
-            this.lblDescription.Location = new System.Drawing.Point(15, 154);
-            this.lblDescription.Name = "lblDescription";
-            this.lblDescription.Size = new System.Drawing.Size(183, 15);
-            this.lblDescription.TabIndex = 4;
-            this.lblDescription.Text = "Mô Tả (Mô tả chi tiết...)";
+            lblDescription.AutoSize = true;
+            lblDescription.Location = new Point(15, 154);
+            lblDescription.Name = "lblDescription";
+            lblDescription.Size = new Size(130, 15);
+            lblDescription.TabIndex = 4;
+            lblDescription.Text = "Mô Tả (Mô tả chi tiết...)";
             // 
             // txtCategoryName
             // 
-            this.txtCategoryName.Location = new System.Drawing.Point(15, 114);
-            this.txtCategoryName.Name = "txtCategoryName";
-            this.txtCategoryName.Size = new System.Drawing.Size(264, 23);
-            this.txtCategoryName.TabIndex = 3;
+            txtCategoryName.Location = new Point(15, 114);
+            txtCategoryName.Name = "txtCategoryName";
+            txtCategoryName.Size = new Size(264, 23);
+            txtCategoryName.TabIndex = 3;
             // 
             // lblCategoryName
             // 
-            this.lblCategoryName.AutoSize = true;
-            this.lblCategoryName.Location = new System.Drawing.Point(15, 96);
-            this.lblCategoryName.Name = "lblCategoryName";
-            this.lblCategoryName.Size = new System.Drawing.Size(206, 15);
-            this.lblCategoryName.TabIndex = 2;
-            this.lblCategoryName.Text = "Tên Nhóm hàng (Ví dụ: Bánh kẹo)";
+            lblCategoryName.AutoSize = true;
+            lblCategoryName.Location = new Point(15, 96);
+            lblCategoryName.Name = "lblCategoryName";
+            lblCategoryName.Size = new Size(185, 15);
+            lblCategoryName.TabIndex = 2;
+            lblCategoryName.Text = "Tên Nhóm hàng (Ví dụ: Bánh kẹo)";
             // 
             // txtId
             // 
-            this.txtId.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.txtId.Location = new System.Drawing.Point(15, 55);
-            this.txtId.Name = "txtId";
-            this.txtId.ReadOnly = true;
-            this.txtId.Size = new System.Drawing.Size(264, 23);
-            this.txtId.TabIndex = 1;
+            txtId.BackColor = SystemColors.ControlLight;
+            txtId.Location = new Point(15, 55);
+            txtId.Name = "txtId";
+            txtId.ReadOnly = true;
+            txtId.Size = new Size(264, 23);
+            txtId.TabIndex = 1;
             // 
             // lblId
             // 
-            this.lblId.AutoSize = true;
-            this.lblId.Location = new System.Drawing.Point(15, 37);
-            this.lblId.Name = "lblId";
-            this.lblId.Size = new System.Drawing.Size(39, 15);
-            this.lblId.TabIndex = 0;
-            this.lblId.Text = "Mã ID";
+            lblId.AutoSize = true;
+            lblId.Location = new Point(15, 37);
+            lblId.Name = "lblId";
+            lblId.Size = new Size(38, 15);
+            lblId.TabIndex = 0;
+            lblId.Text = "Mã ID";
             // 
             // statusStrip1
             // 
-            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripStatusLabelReady,
-            this.toolStripStatusLabelUrl});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 439);
-            this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(784, 22);
-            this.statusStrip1.TabIndex = 3;
-            this.statusStrip1.Text = "statusStrip1";
+            statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabelReady, toolStripStatusLabelUrl });
+            statusStrip1.Location = new Point(0, 439);
+            statusStrip1.Name = "statusStrip1";
+            statusStrip1.Size = new Size(784, 22);
+            statusStrip1.TabIndex = 3;
+            statusStrip1.Text = "statusStrip1";
             // 
             // toolStripStatusLabelReady
             // 
-            this.toolStripStatusLabelReady.Name = "toolStripStatusLabelReady";
-            this.toolStripStatusLabelReady.Size = new System.Drawing.Size(42, 17);
-            this.toolStripStatusLabelReady.Text = "Ready ";
+            toolStripStatusLabelReady.Name = "toolStripStatusLabelReady";
+            toolStripStatusLabelReady.Size = new Size(42, 17);
+            toolStripStatusLabelReady.Text = "Ready ";
             // 
             // toolStripStatusLabelUrl
             // 
-            this.toolStripStatusLabelUrl.Name = "toolStripStatusLabelUrl";
-            this.toolStripStatusLabelUrl.Size = new System.Drawing.Size(217, 17);
-            this.toolStripStatusLabelUrl.Text = "https://localhost:7123/api/categories";
+            toolStripStatusLabelUrl.Name = "toolStripStatusLabelUrl";
+            toolStripStatusLabelUrl.Size = new Size(202, 17);
+            toolStripStatusLabelUrl.Text = "https://localhost:7123/api/categories";
             // 
             // FormCategoryManagement
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(784, 461);
-            this.Controls.Add(this.statusStrip1);
-            this.Controls.Add(this.gbDetails);
-            this.Controls.Add(this.gbList);
-            this.Controls.Add(this.gbSearch);
-            this.Name = "FormCategoryManagement";
-            this.Text = "Quản lý Danh mục Nhóm hàng - FormCategoryManagement";
-            this.Load += new System.EventHandler(this.FormCategoryManagement_Load);
-
-            this.gbSearch.ResumeLayout(false);
-            this.gbSearch.PerformLayout();
-            this.gbList.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.dgvCategories)).EndInit();
-            this.gbDetails.ResumeLayout(false);
-            this.gbDetails.PerformLayout();
-            this.statusStrip1.ResumeLayout(false);
-            this.statusStrip1.PerformLayout();
-            this.ResumeLayout(false);
-            this.PerformLayout();
+            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(784, 461);
+            Controls.Add(statusStrip1);
+            Controls.Add(gbDetails);
+            Controls.Add(gbList);
+            Controls.Add(gbSearch);
+            Name = "FormCategoryManagement";
+            Text = "Quản lý Danh mục Nhóm hàng - FormCategoryManagement";
+            Load += FormCategoryManagement_Load;
+            gbSearch.ResumeLayout(false);
+            gbSearch.PerformLayout();
+            gbList.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)dgvCategories).EndInit();
+            gbDetails.ResumeLayout(false);
+            gbDetails.PerformLayout();
+            statusStrip1.ResumeLayout(false);
+            statusStrip1.PerformLayout();
+            ResumeLayout(false);
+            PerformLayout();
 
         }
 
