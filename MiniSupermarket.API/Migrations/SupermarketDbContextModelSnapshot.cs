@@ -203,7 +203,8 @@ namespace MiniSupermarket.API.Migrations
                         new
                         {
                             CustomerId = 1,
-                            CustomerName = "Nguyễn Văn A",
+                            Address = "125 Nguyễn Trãi, Phường Bến Thành, TP. Hồ Chí Minh",
+                            CustomerName = "Nguyễn Văn Anh",
                             MembershipRank = "Vàng",
                             PhoneNumber = "0901122334",
                             RewardPoints = 150
@@ -211,7 +212,8 @@ namespace MiniSupermarket.API.Migrations
                         new
                         {
                             CustomerId = 2,
-                            CustomerName = "Trần Thị B",
+                            Address = "45 Lê Lợi, Phường Sài Gòn, TP. Hồ Chí Minh",
+                            CustomerName = "Trần Thị Bích Ngọc",
                             MembershipRank = "Bạc",
                             PhoneNumber = "0918877665",
                             RewardPoints = 50
@@ -219,7 +221,8 @@ namespace MiniSupermarket.API.Migrations
                         new
                         {
                             CustomerId = 3,
-                            CustomerName = "Lê Văn C",
+                            Address = "78 Nguyễn Văn Linh, Phường Tân Hưng, TP. Hồ Chí Minh",
+                            CustomerName = "Lê Văn Cường",
                             MembershipRank = "Chuẩn",
                             PhoneNumber = "0983344556",
                             RewardPoints = 10
@@ -227,7 +230,8 @@ namespace MiniSupermarket.API.Migrations
                         new
                         {
                             CustomerId = 4,
-                            CustomerName = "Phạm Thị D",
+                            Address = "230 Điện Biên Phủ, Phường Gia Định, TP. Hồ Chí Minh",
+                            CustomerName = "Phạm Thị Diễm My",
                             MembershipRank = "Vàng",
                             PhoneNumber = "0934455667",
                             RewardPoints = 200
@@ -235,7 +239,8 @@ namespace MiniSupermarket.API.Migrations
                         new
                         {
                             CustomerId = 5,
-                            CustomerName = "Hoàng Văn E",
+                            Address = "56 Phan Văn Trị, Phường Gò Vấp, TP. Hồ Chí Minh",
+                            CustomerName = "Hoàng Văn Đức",
                             MembershipRank = "Bạc",
                             PhoneNumber = "0977788990",
                             RewardPoints = 80
@@ -243,7 +248,8 @@ namespace MiniSupermarket.API.Migrations
                         new
                         {
                             CustomerId = 6,
-                            CustomerName = "Võ Thị F",
+                            Address = "102 Quang Trung, Phường Thông Tây Hội, TP. Hồ Chí Minh",
+                            CustomerName = "Võ Thị Thanh Hương",
                             MembershipRank = "Chuẩn",
                             PhoneNumber = "0961234567",
                             RewardPoints = 25
@@ -251,10 +257,128 @@ namespace MiniSupermarket.API.Migrations
                         new
                         {
                             CustomerId = 7,
-                            CustomerName = "Đặng Văn G",
+                            Address = "88 Nguyễn Xí, Phường Bình Lợi Trung, TP. Hồ Chí Minh",
+                            CustomerName = "Đặng Văn Giang",
                             MembershipRank = "Vàng",
                             PhoneNumber = "0923456789",
                             RewardPoints = 175
+                        },
+                        new
+                        {
+                            CustomerId = 8,
+                            Address = "15 Cách Mạng Tháng Tám, Phường Bàn Cờ, TP. Hồ Chí Minh",
+                            CustomerName = "Bùi Thị Kim Ngân",
+                            MembershipRank = "Bạc",
+                            PhoneNumber = "0902233445",
+                            RewardPoints = 65
+                        },
+                        new
+                        {
+                            CustomerId = 9,
+                            Address = "67 Trường Chinh, Phường Tân Bình, TP. Hồ Chí Minh",
+                            CustomerName = "Đỗ Minh Khang",
+                            MembershipRank = "Chuẩn",
+                            PhoneNumber = "0913344556",
+                            RewardPoints = 30
+                        },
+                        new
+                        {
+                            CustomerId = 10,
+                            Address = "190 Hoàng Văn Thụ, Phường Phú Nhuận, TP. Hồ Chí Minh",
+                            CustomerName = "Nguyễn Thị Thu Hà",
+                            MembershipRank = "Vàng",
+                            PhoneNumber = "0984455667",
+                            RewardPoints = 220
+                        },
+                        new
+                        {
+                            CustomerId = 11,
+                            Address = "25 Lạc Long Quân, Phường Hòa Bình, TP. Hồ Chí Minh",
+                            CustomerName = "Trần Quốc Bảo",
+                            MembershipRank = "Bạc",
+                            PhoneNumber = "0935566778",
+                            RewardPoints = 90
+                        },
+                        new
+                        {
+                            CustomerId = 12,
+                            Address = "140 Âu Cơ, Phường Tân Hòa, TP. Hồ Chí Minh",
+                            CustomerName = "Lê Thị Minh Châu",
+                            MembershipRank = "Chuẩn",
+                            PhoneNumber = "0976677889",
+                            RewardPoints = 15
+                        },
+                        new
+                        {
+                            CustomerId = 13,
+                            Address = "39 Võ Văn Ngân, Phường Thủ Đức, TP. Hồ Chí Minh",
+                            CustomerName = "Phan Thanh Tùng",
+                            MembershipRank = "Vàng",
+                            PhoneNumber = "0967788991",
+                            RewardPoints = 300
+                        },
+                        new
+                        {
+                            CustomerId = 14,
+                            Address = "81 Kha Vạn Cân, Phường Linh Xuân, TP. Hồ Chí Minh",
+                            CustomerName = "Huỳnh Thị Lan Anh",
+                            MembershipRank = "Bạc",
+                            PhoneNumber = "0928899001",
+                            RewardPoints = 110
+                        },
+                        new
+                        {
+                            CustomerId = 15,
+                            Address = "210 Nguyễn Duy Trinh, Phường Long Trường, TP. Hồ Chí Minh",
+                            CustomerName = "Ngô Văn Phúc",
+                            MembershipRank = "Chuẩn",
+                            PhoneNumber = "0909900112",
+                            RewardPoints = 35
+                        },
+                        new
+                        {
+                            CustomerId = 16,
+                            Address = "72 Tô Ngọc Vân, Phường Tam Bình, TP. Hồ Chí Minh",
+                            CustomerName = "Mai Thị Ngọc Hân",
+                            MembershipRank = "Vàng",
+                            PhoneNumber = "0911011223",
+                            RewardPoints = 250
+                        },
+                        new
+                        {
+                            CustomerId = 17,
+                            Address = "48 Phạm Văn Đồng, Phường Hiệp Bình, TP. Hồ Chí Minh",
+                            CustomerName = "Trương Minh Quân",
+                            MembershipRank = "Bạc",
+                            PhoneNumber = "0982122334",
+                            RewardPoints = 75
+                        },
+                        new
+                        {
+                            CustomerId = 18,
+                            Address = "115 Lê Văn Việt, Phường Tăng Nhơn Phú, TP. Hồ Chí Minh",
+                            CustomerName = "Đinh Thị Mỹ Linh",
+                            MembershipRank = "Chuẩn",
+                            PhoneNumber = "0933233445",
+                            RewardPoints = 40
+                        },
+                        new
+                        {
+                            CustomerId = 19,
+                            Address = "93 Nguyễn Thị Thập, Phường Tân Mỹ, TP. Hồ Chí Minh",
+                            CustomerName = "Cao Văn Thành",
+                            MembershipRank = "Vàng",
+                            PhoneNumber = "0974344556",
+                            RewardPoints = 180
+                        },
+                        new
+                        {
+                            CustomerId = 20,
+                            Address = "160 Huỳnh Tấn Phát, Phường Tân Thuận, TP. Hồ Chí Minh",
+                            CustomerName = "Dương Thị Thùy Trang",
+                            MembershipRank = "Bạc",
+                            PhoneNumber = "0965455667",
+                            RewardPoints = 95
                         });
                 });
 
@@ -316,7 +440,7 @@ namespace MiniSupermarket.API.Migrations
                             Barcode = "8933333333333",
                             CategoryId = 3,
                             Price = 8500m,
-                            ProductName = "Sữa Tươi Tiệt Trùng TH True Milk 180ml",
+                            ProductName = "Sữa Tươi TH True Milk 180ml",
                             StockQuantity = 200
                         },
                         new
@@ -349,6 +473,60 @@ namespace MiniSupermarket.API.Migrations
                         new
                         {
                             ProductId = 7,
+                            Barcode = "8930000000007",
+                            CategoryId = 7,
+                            Price = 180000m,
+                            ProductName = "Gạo ST25 Túi 5kg",
+                            StockQuantity = 35
+                        },
+                        new
+                        {
+                            ProductId = 8,
+                            Barcode = "8930000000008",
+                            CategoryId = 8,
+                            Price = 22000m,
+                            ProductName = "Cá Hộp Ba Cô Gái 155g",
+                            StockQuantity = 65
+                        },
+                        new
+                        {
+                            ProductId = 9,
+                            Barcode = "8930000000009",
+                            CategoryId = 9,
+                            Price = 48000m,
+                            ProductName = "Cà Phê G7 Hòa Tan Hộp 20 Gói",
+                            StockQuantity = 75
+                        },
+                        new
+                        {
+                            ProductId = 10,
+                            Barcode = "8930000000010",
+                            CategoryId = 10,
+                            Price = 42000m,
+                            ProductName = "Bánh Bông Lan Solite Hộp 360g",
+                            StockQuantity = 45
+                        },
+                        new
+                        {
+                            ProductId = 11,
+                            Barcode = "8930000000011",
+                            CategoryId = 11,
+                            Price = 45000m,
+                            ProductName = "Kem Merino Vani Hộp 450ml",
+                            StockQuantity = 30
+                        },
+                        new
+                        {
+                            ProductId = 12,
+                            Barcode = "8930000000012",
+                            CategoryId = 12,
+                            Price = 28000m,
+                            ProductName = "Màng Bọc Thực Phẩm Ringo 30cm",
+                            StockQuantity = 55
+                        },
+                        new
+                        {
+                            ProductId = 13,
                             Barcode = "8937777777777",
                             CategoryId = 13,
                             Price = 45000m,
@@ -357,7 +535,7 @@ namespace MiniSupermarket.API.Migrations
                         },
                         new
                         {
-                            ProductId = 8,
+                            ProductId = 14,
                             Barcode = "8938888888888",
                             CategoryId = 14,
                             Price = 165000m,
@@ -366,7 +544,7 @@ namespace MiniSupermarket.API.Migrations
                         },
                         new
                         {
-                            ProductId = 9,
+                            ProductId = 15,
                             Barcode = "8939999999999",
                             CategoryId = 15,
                             Price = 38000m,
@@ -375,12 +553,48 @@ namespace MiniSupermarket.API.Migrations
                         },
                         new
                         {
-                            ProductId = 10,
+                            ProductId = 16,
                             Barcode = "8930000000000",
                             CategoryId = 16,
                             Price = 210000m,
                             ProductName = "Nước Giặt Omo Matic Cửa Trước 3.6kg",
                             StockQuantity = 15
+                        },
+                        new
+                        {
+                            ProductId = 17,
+                            Barcode = "8930000000017",
+                            CategoryId = 17,
+                            Price = 32000m,
+                            ProductName = "Nước Rửa Chén Sunlight Chanh 750ml",
+                            StockQuantity = 80
+                        },
+                        new
+                        {
+                            ProductId = 18,
+                            Barcode = "8930000000018",
+                            CategoryId = 18,
+                            Price = 18000m,
+                            ProductName = "Vở Học Sinh Campus 200 Trang",
+                            StockQuantity = 150
+                        },
+                        new
+                        {
+                            ProductId = 19,
+                            Barcode = "8930000000019",
+                            CategoryId = 19,
+                            Price = 35000m,
+                            ProductName = "Khẩu Trang Y Tế Hộp 50 Cái",
+                            StockQuantity = 100
+                        },
+                        new
+                        {
+                            ProductId = 20,
+                            Barcode = "8930000000020",
+                            CategoryId = 20,
+                            Price = 25000m,
+                            ProductName = "Hộp Nhựa Đựng Thực Phẩm Duy Tân 1 Lít",
+                            StockQuantity = 70
                         });
                 });
 
