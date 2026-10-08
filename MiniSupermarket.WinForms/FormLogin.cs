@@ -66,16 +66,32 @@ namespace MiniSupermarket.WinForms
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Information);
 
-                    FormCategoryManagement mainForm =
-                        new FormCategoryManagement();
+                    //FormCategoryManagement mainForm =
+                    //    new FormCategoryManagement();
 
-                    FormCustomerManagement customerManagement =
-                        new FormCustomerManagement();
+                    //FormCustomerManagement customerManagement =
+                    //    new FormCustomerManagement();
+
+                    //this.Hide();
+                    //mainForm.Show();
+                    //customerManagement.Show();
+                    //this.Close();
+
+
+                    SessionManager.CurrentUsername = username;
 
                     this.Hide();
-                    mainForm.Show();
-                    customerManagement.Show();
-                    //this.Close();
+
+                    using (FormMainShell mainForm = new FormMainShell())
+                    {
+                        mainForm.ShowDialog();
+                    }
+
+                    this.Show();
+
+                    txtPass.Clear();
+                    txtPass.Focus();
+
                 }
                 else
                 {

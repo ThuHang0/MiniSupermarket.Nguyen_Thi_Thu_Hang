@@ -21,6 +21,7 @@ namespace MiniSupermarket.WinForms
             };
         }
 
+
         private async void FormCustomerManagement_Load(object sender, EventArgs e)
         {
             await LoadCustomers();
