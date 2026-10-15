@@ -17,6 +17,7 @@ namespace MiniSupermarket.WinForms
         private readonly BindingSource _cartSource = new();
 
         private bool _isBusy;
+        private Guid _requestId = Guid.NewGuid();
 
         public FormPOS()
         {
@@ -469,11 +470,15 @@ namespace MiniSupermarket.WinForms
         {
             _cart.Clear();
 
+            // Giao dịch tiếp theo dùng mã khác.
+            _requestId = Guid.NewGuid();
+
             txtBarcode.Clear();
             txtCashReceived.Clear();
             txtCustomerPhone.Clear();
 
             lblCustomerName.Text = "Khách vãng lai";
+
             UpdateCartDisplay();
         }
 
@@ -546,19 +551,16 @@ namespace MiniSupermarket.WinForms
                 // Cấu trúc gửi theo hướng dẫn POS trong đề.
                 var orderRequest = new
                 {
-                    CashierUsername =
-                        SessionManager.CurrentUsername,
+                    RequestId = _requestId,
 
-                    CustomerPhone =
-                        txtCustomerPhone.Text.Trim(),
+                    CustomerPhone = txtCustomerPhone.Text.Trim(),
 
                     CashReceived = cashReceived,
 
                     Items = _cart.Select(item => new
                     {
                         item.ProductId,
-                        item.Quantity,
-                        item.UnitPrice
+                        item.Quantity
                     }).ToList()
                 };
 
@@ -577,8 +579,23 @@ namespace MiniSupermarket.WinForms
                     return;
                 }
 
+                var result = await response.Content
+                    .ReadFromJsonAsync<PosCheckoutResult>();
+
+                if (result == null)
+                {
+                    MessageBox.Show(
+                        "Máy chủ đã trả thành công nhưng chưa đọc được kết quả. " +
+                        "Giữ nguyên giỏ và kiểm tra lại giao dịch.");
+
+                    return;
+                }
+
                 MessageBox.Show(
-                    "Thanh toán thành công!",
+                    $"Thanh toán thành công!\n" +
+                    $"Mã hóa đơn: {result.OrderId}\n" +
+                    $"Tổng tiền: {FormatMoney(result.TotalAmount)}\n" +
+                    $"Tiền thừa: {FormatMoney(result.Change)}",
                     "Thông báo",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information);
@@ -680,5 +697,13 @@ namespace MiniSupermarket.WinForms
         public string PhoneNumber { get; set; } = string.Empty;
         public string MembershipRank { get; set; } = string.Empty;
         public int RewardPoints { get; set; }
+    }
+    public class PosCheckoutResult
+    {
+        public int OrderId { get; set; }
+
+        public decimal TotalAmount { get; set; }
+
+        public decimal Change { get; set; }
     }
 }

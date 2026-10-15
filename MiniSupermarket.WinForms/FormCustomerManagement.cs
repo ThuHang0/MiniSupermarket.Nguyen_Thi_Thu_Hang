@@ -12,15 +12,20 @@ namespace MiniSupermarket.WinForms
         // Đổi cổng 7063 thành cổng thực tế mà Swagger Backend của bạn đang chạy
         private readonly HttpClient _httpClient;
 
+        //public FormCustomerManagement()
+        //{
+        //    InitializeComponent();
+        //    _httpClient = new HttpClient
+        //    {
+        //        BaseAddress = new Uri("https://localhost:7063/api/")
+        //    };
+        //}
         public FormCustomerManagement()
         {
             InitializeComponent();
-            _httpClient = new HttpClient
-            {
-                BaseAddress = new Uri("https://localhost:7063/api/")
-            };
-        }
 
+            _httpClient = ApiClientService.Client;
+        }
 
         private async void FormCustomerManagement_Load(object sender, EventArgs e)
         {

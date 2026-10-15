@@ -127,6 +127,11 @@ namespace MiniSupermarket.WinForms
             txtRoleName.Text = "";
             txtDescription.Text = "";
         }
+
+        private void dgvRoles_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
     }
 
     public class RoleDto

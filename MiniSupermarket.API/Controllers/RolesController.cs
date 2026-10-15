@@ -5,6 +5,7 @@ namespace MiniSupermarket.API.Controllers
 {
     [Route("api/[controller]")] // Định tuyến: /api/roles
     [ApiController]
+
     public class RolesController : ControllerBase
     {
 

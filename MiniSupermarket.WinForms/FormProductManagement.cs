@@ -1,316 +1,268 @@
-﻿
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http.Json;
-using System.Windows.Forms;
+﻿using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace MiniSupermarket.WinForms
 {
     public partial class FormProductManagement : Form
     {
-        private void panelRight_Paint(object sender, PaintEventArgs e)
-        {
-        }
-        private List<ProductViewDto> _products = new();
+        private bool _busy;
 
         public FormProductManagement()
         {
             InitializeComponent();
-            btnSearch.Text = "Tìm kiếm";
-            btnSearch.Location = new System.Drawing.Point(470, 48);
-            btnSearch.Size = new System.Drawing.Size(110, 35);
-            btnSearch.ForeColor = System.Drawing.Color.White;
-            btnSearch.BringToFront();
-
-            Load += FormProductManagement_Load;
-
-            btnLoad.Click += btnLoad_Click;
-            btnSearch.Click += btnSearch_Click;
-            btnAdd.Click += btnAdd_Click;
-            btnUpdate.Click += btnUpdate_Click;
-            btnDelete.Click += btnDelete_Click;
-
-            dgvProducts.CellClick += dgvProducts_CellClick;
         }
 
         private async void FormProductManagement_Load(
-            object? sender, EventArgs e)
+            object? sender,
+            EventArgs e)
         {
-            await LoadCategoriesAsync();
-            await LoadProductsAsync();
+            if (SessionManager.CurrentRole != "Admin" &&
+                SessionManager.CurrentRole != "Warehouse")
+            {
+                MessageBox.Show("Bạn không có quyền quản lý sản phẩm.");
+                Close();
+                return;
+            }
+
+            await RunAsync(async () =>
+            {
+                await LoadCategoriesAsync();
+                await LoadProductsAsync();
+            });
         }
 
-        // Tải danh mục từ API
         private async Task LoadCategoriesAsync()
         {
-            try
+            var categories = await ApiClientService.Client
+                .GetFromJsonAsync<List<CategoryDto>>("categories")
+                ?? new List<CategoryDto>();
+
+            // Hai danh sách riêng để lựa chọn ở hai ComboBox
+            // không tác động lẫn nhau.
+            cboCategory.DisplayMember = "CategoryName";
+            cboCategory.ValueMember = "CategoryId";
+            cboCategory.DataSource = categories;
+
+            var filterCategories = new List<CategoryDto>
             {
-                var categories =
-                    await ApiClientService.Client
-                    .GetFromJsonAsync<List<CategoryViewDto>>(
-                        "categories");
+                new CategoryDto
+                {
+                    CategoryId = 0,
+                    CategoryName = "Tất cả danh mục"
+                }
+            };
 
-                categories ??= new();
+            filterCategories.AddRange(categories);
 
-                cboCategory.DataSource =
-                    new List<CategoryViewDto>(categories);
-
-                cboCategory.DisplayMember = "CategoryName";
-                cboCategory.ValueMember = "CategoryId";
-
-                var filterItems =
-                    new List<CategoryViewDto>
-                    {
-                        new CategoryViewDto
-                        {
-                            CategoryId = 0,
-                            CategoryName = "Tất cả danh mục"
-                        }
-                    };
-
-                filterItems.AddRange(categories);
-
-                cboFilterCategory.DataSource = filterItems;
-                cboFilterCategory.DisplayMember = "CategoryName";
-                cboFilterCategory.ValueMember = "CategoryId";
-                cboFilterCategory.SelectedIndex = 0;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    "Không tải được danh mục: " + ex.Message);
-            }
+            cboFilterCategory.DisplayMember = "CategoryName";
+            cboFilterCategory.ValueMember = "CategoryId";
+            cboFilterCategory.DataSource = filterCategories;
         }
 
-        // Tải sản phẩm từ API
         private async Task LoadProductsAsync()
         {
-            try
-            {
-                _products = await ApiClientService.Client
-                    .GetFromJsonAsync<List<ProductViewDto>>(
-                        "products") ?? new();
+            string keyword = Uri.EscapeDataString(
+                txtSearchBarcode.Text.Trim());
 
-                dgvProducts.DataSource = null;
-                dgvProducts.DataSource = _products;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    "Không tải được sản phẩm: " + ex.Message);
-            }
+            int categoryId =
+                cboFilterCategory.SelectedItem is CategoryDto category
+                    ? category.CategoryId
+                    : 0;
+
+            string url =
+                $"products?keyword={keyword}&categoryId={categoryId}";
+
+            var products = await ApiClientService.Client
+                .GetFromJsonAsync<List<ProductDto>>(url)
+                ?? new List<ProductDto>();
+
+            dgvProducts.DataSource = products;
+            dgvProducts.ClearSelection();
+
+            ClearInputs();
         }
 
-        // Chọn dòng sản phẩm
         private void dgvProducts_CellClick(
             object? sender,
             DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex < 0) return;
+            if (e.RowIndex < 0)
+                return;
 
             if (dgvProducts.Rows[e.RowIndex].DataBoundItem
-                is not ProductViewDto product)
+                is not ProductDto product)
+            {
                 return;
+            }
 
             txtId.Text = product.ProductId.ToString();
             txtBarcode.Text = product.Barcode;
             txtProductName.Text = product.ProductName;
-
-            nudPrice.Value = Math.Clamp(
-                product.Price,
-                nudPrice.Minimum,
-                nudPrice.Maximum);
-
-            nudStock.Value = Math.Clamp(
-                product.StockQuantity,
-                0,
-                (int)nudStock.Maximum);
-
+            nudPrice.Value = product.Price;
+            nudStock.Value = product.StockQuantity;
             cboCategory.SelectedValue = product.CategoryId;
         }
 
-        // Tạo dữ liệu gửi cho API
-        private object GetProductInput(int? id = null)
+        private ProductDto? ReadInputs()
         {
-            return new
+            string barcode = txtBarcode.Text.Trim();
+            string name = txtProductName.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(barcode))
             {
-                ProductId = id ?? 0,
-                Barcode = txtBarcode.Text.Trim(),
-                ProductName = txtProductName.Text.Trim(),
+                MessageBox.Show("Vui lòng nhập mã vạch.");
+                txtBarcode.Focus();
+                return null;
+            }
+
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                MessageBox.Show("Vui lòng nhập tên sản phẩm.");
+                txtProductName.Focus();
+                return null;
+            }
+
+            if (cboCategory.SelectedItem is not CategoryDto category)
+            {
+                MessageBox.Show("Vui lòng chọn danh mục.");
+                return null;
+            }
+
+            return new ProductDto
+            {
+                Barcode = barcode,
+                ProductName = name,
                 Price = nudPrice.Value,
                 StockQuantity = (int)nudStock.Value,
-                CategoryId = Convert.ToInt32(
-                    cboCategory.SelectedValue)
+                CategoryId = category.CategoryId
             };
         }
 
-        private bool ValidateInputs()
-        {
-            if (string.IsNullOrWhiteSpace(txtBarcode.Text) ||
-                string.IsNullOrWhiteSpace(txtProductName.Text))
-            {
-                MessageBox.Show(
-                    "Vui lòng nhập mã vạch và tên sản phẩm!");
-                return false;
-            }
-
-            if (nudPrice.Value <= 0)
-            {
-                MessageBox.Show("Giá phải lớn hơn 0!");
-                return false;
-            }
-
-            if (cboCategory.SelectedValue == null)
-            {
-                MessageBox.Show("Vui lòng chọn danh mục!");
-                return false;
-            }
-
-            return true;
-        }
-
-        // Thêm sản phẩm
         private async void btnAdd_Click(
-            object? sender, EventArgs e)
+            object? sender,
+            EventArgs e)
         {
-            if (!ValidateInputs()) return;
+            var product = ReadInputs();
 
-            try
-            {
-                var response = await ApiClientService.Client
-                    .PostAsJsonAsync(
-                        "products",
-                        GetProductInput());
+            if (product == null)
+                return;
 
-                if (response.IsSuccessStatusCode)
-                {
-                    MessageBox.Show("Thêm sản phẩm thành công!");
-                    await LoadProductsAsync();
-                    ClearInputs();
-                }
-                else
-                {
-                    MessageBox.Show(
-                        "Thêm thất bại: " +
-                        await response.Content.ReadAsStringAsync());
-                }
-            }
-            catch (Exception ex)
+            await RunAsync(async () =>
             {
-                MessageBox.Show(ex.Message);
-            }
+                using var response = await ApiClientService.Client
+                    .PostAsJsonAsync("products", product);
+
+                await EnsureSuccessAsync(response);
+
+                await LoadProductsAsync();
+
+                MessageBox.Show(
+                    "Thêm sản phẩm thành công. " +
+                    "Nếu đang lọc, sản phẩm có thể không nằm trong kết quả.");
+            });
         }
 
-        // Cập nhật sản phẩm
         private async void btnUpdate_Click(
-            object? sender, EventArgs e)
+            object? sender,
+            EventArgs e)
         {
             if (!int.TryParse(txtId.Text, out int id))
             {
-                MessageBox.Show("Hãy chọn sản phẩm cần sửa!");
+                MessageBox.Show("Hãy chọn sản phẩm cần sửa.");
                 return;
             }
 
-            if (!ValidateInputs()) return;
+            var product = ReadInputs();
 
-            try
-            {
-                var response = await ApiClientService.Client
-                    .PutAsJsonAsync(
-                        $"products/{id}",
-                        GetProductInput(id));
+            if (product == null)
+                return;
 
-                if (response.IsSuccessStatusCode)
-                {
-                    MessageBox.Show("Cập nhật thành công!");
-                    await LoadProductsAsync();
-                }
-                else
-                {
-                    MessageBox.Show(
-                        "Cập nhật thất bại: " +
-                        await response.Content.ReadAsStringAsync());
-                }
-            }
-            catch (Exception ex)
+            await RunAsync(async () =>
             {
-                MessageBox.Show(ex.Message);
-            }
+                using var response = await ApiClientService.Client
+                    .PutAsJsonAsync($"products/{id}", product);
+
+                await EnsureSuccessAsync(response);
+
+                await LoadProductsAsync();
+
+                MessageBox.Show("Cập nhật sản phẩm thành công.");
+            });
         }
 
-        // Xóa sản phẩm
         private async void btnDelete_Click(
-            object? sender, EventArgs e)
+            object? sender,
+            EventArgs e)
         {
             if (!int.TryParse(txtId.Text, out int id))
             {
-                MessageBox.Show("Hãy chọn sản phẩm cần xóa!");
+                MessageBox.Show("Hãy chọn sản phẩm cần xóa.");
                 return;
             }
 
             if (MessageBox.Show(
-                "Bạn có chắc chắn muốn xóa?",
+                $"Bạn có chắc muốn xóa \"{txtProductName.Text}\"?",
                 "Xác nhận",
-                MessageBoxButtons.YesNo) != DialogResult.Yes)
-                return;
-
-            try
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning) != DialogResult.Yes)
             {
-                var response =
-                    await ApiClientService.Client
+                return;
+            }
+
+            await RunAsync(async () =>
+            {
+                using var response = await ApiClientService.Client
                     .DeleteAsync($"products/{id}");
 
-                if (response.IsSuccessStatusCode)
-                {
-                    MessageBox.Show("Xóa thành công!");
-                    await LoadProductsAsync();
-                    ClearInputs();
-                }
-                else
-                {
-                    MessageBox.Show(
-                        "Xóa thất bại: " +
-                        await response.Content.ReadAsStringAsync());
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
+                await EnsureSuccessAsync(response);
+
+                await LoadProductsAsync();
+
+                MessageBox.Show("Đã xóa sản phẩm.");
+            });
         }
 
-        // Tìm kiếm, lọc danh mục
-        private void btnSearch_Click(
-            object? sender, EventArgs e)
+        private async void btnSearch_Click(
+            object? sender,
+            EventArgs e)
         {
-            string keyword =
-                txtSearchBarcode.Text.Trim();
+            await RunAsync(LoadProductsAsync);
+        }
 
-            int categoryId = Convert.ToInt32(
-                cboFilterCategory.SelectedValue ?? 0);
+        private async void txtSearchBarcode_KeyDown(
+            object? sender,
+            KeyEventArgs e)
+        {
+            if (e.KeyCode != Keys.Enter)
+                return;
 
-            var filtered = _products.Where(p =>
-                (string.IsNullOrEmpty(keyword) ||
-                 p.Barcode.Contains(
-                     keyword,
-                     StringComparison.OrdinalIgnoreCase) ||
-                 p.ProductName.Contains(
-                     keyword,
-                     StringComparison.OrdinalIgnoreCase)) &&
-                (categoryId == 0 ||
-                 p.CategoryId == categoryId))
-                .ToList();
-
-            dgvProducts.DataSource = null;
-            dgvProducts.DataSource = filtered;
+            e.SuppressKeyPress = true;
+            await RunAsync(LoadProductsAsync);
         }
 
         private async void btnLoad_Click(
-            object? sender, EventArgs e)
+            object? sender,
+            EventArgs e)
         {
-            await LoadProductsAsync();
+            await RunAsync(async () =>
+            {
+                txtSearchBarcode.Clear();
+
+                await LoadCategoriesAsync();
+
+                cboFilterCategory.SelectedValue = 0;
+
+                await LoadProductsAsync();
+            });
+        }
+
+        private void btnClear_Click(
+            object? sender,
+            EventArgs e)
+        {
             ClearInputs();
+            dgvProducts.ClearSelection();
+            txtBarcode.Focus();
         }
 
         private void ClearInputs()
@@ -320,27 +272,115 @@ namespace MiniSupermarket.WinForms
             txtProductName.Clear();
             nudPrice.Value = 0;
             nudStock.Value = 0;
+
+            if (cboCategory.Items.Count > 0)
+                cboCategory.SelectedIndex = 0;
         }
 
-        private void dgvProducts_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        private async Task RunAsync(Func<Task> action)
         {
+            if (_busy)
+                return;
 
+            _busy = true;
+            SetButtonsEnabled(false);
+
+            try
+            {
+                await action();
+            }
+            catch (Exception ex)
+            {
+                if (!IsDisposed)
+                {
+                    MessageBox.Show(
+                        ex.Message,
+                        "Không thực hiện được",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                }
+            }
+            finally
+            {
+                _busy = false;
+
+                if (!IsDisposed)
+                    SetButtonsEnabled(true);
+            }
+        }
+
+        private void SetButtonsEnabled(bool enabled)
+        {
+            btnAdd.Enabled = enabled;
+            btnUpdate.Enabled = enabled;
+            btnDelete.Enabled = enabled;
+            btnSearch.Enabled = enabled;
+            btnLoad.Enabled = enabled;
+            btnClear.Enabled = enabled;
+        }
+
+        private static async Task EnsureSuccessAsync(
+            HttpResponseMessage response)
+        {
+            if (response.IsSuccessStatusCode)
+                return;
+
+            string body = await response.Content.ReadAsStringAsync();
+
+            string message = $"API trả lỗi {(int)response.StatusCode}.";
+
+            try
+            {
+                using var document = JsonDocument.Parse(body);
+                var root = document.RootElement;
+
+                if (root.TryGetProperty("message", out var value))
+                {
+                    message = value.GetString() ?? message;
+                }
+                else if (root.TryGetProperty("errors", out var errors))
+                {
+                    message = string.Join(
+                        Environment.NewLine,
+                        errors.EnumerateObject()
+                            .SelectMany(p => p.Value.EnumerateArray())
+                            .Select(v => v.GetString() ?? ""));
+                }
+            }
+            catch (JsonException)
+            {
+                // Giữ thông báo mặc định.
+            }
+
+            if (response.StatusCode ==
+                System.Net.HttpStatusCode.Unauthorized)
+            {
+                message = "Phiên đăng nhập hết hạn. Hãy đăng nhập lại.";
+            }
+            else if (response.StatusCode ==
+                     System.Net.HttpStatusCode.Forbidden)
+            {
+                message = "Tài khoản không có quyền thực hiện.";
+            }
+
+            throw new InvalidOperationException(message);
         }
     }
 
-    public class ProductViewDto
+    public class ProductDto
     {
         public int ProductId { get; set; }
-        public string Barcode { get; set; } = "";
-        public string ProductName { get; set; } = "";
-        public decimal Price { get; set; }
-        public int StockQuantity { get; set; }
-        public int CategoryId { get; set; }
-    }
 
-    public class CategoryViewDto
-    {
+        public string Barcode { get; set; } = string.Empty;
+
+        public string ProductName { get; set; } = string.Empty;
+
+        public decimal Price { get; set; }
+
+        public int StockQuantity { get; set; }
+
         public int CategoryId { get; set; }
-        public string CategoryName { get; set; } = "";
+
+        public string CategoryName { get; set; } = string.Empty;
     }
 }

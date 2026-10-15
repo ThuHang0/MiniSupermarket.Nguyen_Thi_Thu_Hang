@@ -1,4 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿
+using System.Security.Cryptography;
+using System.Text;
+using Microsoft.EntityFrameworkCore;
 using MiniSupermarket.API.Models;
 using System.Collections.Generic;
 using System.Reflection.Emit;
@@ -14,11 +17,208 @@ namespace MiniSupermarket.API.Data
         public DbSet<Category> Categories { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<Customer> Customers { get; set; }
+        public DbSet<User> Users { get; set; }
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderDetail> OrderDetails { get; set; }
 
         // Cấu hình dữ liệu mồi ban đầu (Data Seeding)
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Order>()
+    .HasIndex(o => o.RequestId)
+    .IsUnique();
+
+            modelBuilder.Entity<Order>()
+                .HasOne(o => o.Cashier)
+                .WithMany()
+                .HasForeignKey(o => o.CashierId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Order>()
+                .HasOne(o => o.Customer)
+                .WithMany()
+                .HasForeignKey(o => o.CustomerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<OrderDetail>()
+                .HasOne(d => d.Order)
+                .WithMany(o => o.Details)
+                .HasForeignKey(d => d.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<OrderDetail>()
+                .HasOne(d => d.Product)
+                .WithMany()
+                .HasForeignKey(d => d.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Ngăn xóa danh mục làm mất các sản phẩm bên trong.
+            modelBuilder.Entity<Product>()
+                .HasOne(p => p.Category)
+                .WithMany(c => c.Products)
+                .HasForeignKey(p => p.CategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.Username)
+                .IsUnique();
+            // Dữ liệu cố định dành riêng cho tài khoản mẫu của bài thực hành.
+            byte[] sampleSalt = Encoding.UTF8.GetBytes(
+                "MiniMarketLab4SampleSalt2026"
+            );
+
+            byte[] sampleHash = Rfc2898DeriveBytes.Pbkdf2(
+                Encoding.UTF8.GetBytes("123456"),
+                sampleSalt,
+                100000,
+                HashAlgorithmName.SHA256,
+                32
+            );
+
+            string samplePasswordHash =
+                "100000." +
+                Convert.ToBase64String(sampleSalt) +
+                "." +
+                Convert.ToBase64String(sampleHash);
+            modelBuilder.Entity<User>().HasData(
+                new User
+                {
+                    Id = 1,
+                    Username = "admin01",
+                    PasswordHash = samplePasswordHash,
+                    FullName = "Nguyễn Quản Trị",
+                    Role = "Admin",
+                    IsActive = true
+                },
+                new User
+                {
+                    Id = 2,
+                    Username = "admin02",
+                    PasswordHash = samplePasswordHash,
+                    FullName = "Trần Giám Đốc",
+                    Role = "Admin",
+                    IsActive = true
+                },
+                new User
+                {
+                    Id = 3,
+                    Username = "cashier01",
+                    PasswordHash = samplePasswordHash,
+                    FullName = "Lê Thu Ngân",
+                    Role = "Cashier",
+                    IsActive = true
+                },
+                new User
+                {
+                    Id = 4,
+                    Username = "cashier02",
+                    PasswordHash = samplePasswordHash,
+                    FullName = "Phạm Bán Hàng",
+                    Role = "Cashier",
+                    IsActive = true
+                },
+                new User
+                {
+                    Id = 5,
+                    Username = "cashier03",
+                    PasswordHash = samplePasswordHash,
+                    FullName = "Hoàng Thu Ngân",
+                    Role = "Cashier",
+                    IsActive = true
+                },
+                new User
+                {
+                    Id = 6,
+                    Username = "cashier04",
+                    PasswordHash = samplePasswordHash,
+                    FullName = "Vũ Thị Quầy",
+                    Role = "Cashier",
+                    IsActive = true
+                },
+                new User
+                {
+                    Id = 7,
+                    Username = "cashier05",
+                    PasswordHash = samplePasswordHash,
+                    FullName = "Đỗ Bán Lẻ",
+                    Role = "Cashier",
+                    IsActive = true
+                },
+                new User
+                {
+                    Id = 8,
+                    Username = "ware01",
+                    PasswordHash = samplePasswordHash,
+                    FullName = "Ngô Quản Kho",
+                    Role = "Warehouse",
+                    IsActive = true
+                },
+                new User
+                {
+                    Id = 9,
+                    Username = "ware02",
+                    PasswordHash = samplePasswordHash,
+                    FullName = "Bùi Kiểm Kê",
+                    Role = "Warehouse",
+                    IsActive = true
+                },
+                new User
+                {
+                    Id = 10,
+                    Username = "ware03",
+                    PasswordHash = samplePasswordHash,
+                    FullName = "Dương Thủ Kho",
+                    Role = "Warehouse",
+                    IsActive = true
+                },
+                new User
+                {
+                    Id = 11,
+                    Username = "ware04",
+                    PasswordHash = samplePasswordHash,
+                    FullName = "Lý Nhập Hàng",
+                    Role = "Warehouse",
+                    IsActive = true
+                },
+                new User
+                {
+                    Id = 12,
+                    Username = "admin_backup",
+                    PasswordHash = samplePasswordHash,
+                    FullName = "Đặng Hỗ Trợ",
+                    Role = "Admin",
+                    IsActive = true
+                },
+                new User
+                {
+                    Id = 13,
+                    Username = "cashier06",
+                    PasswordHash = samplePasswordHash,
+                    FullName = "Hồ Ca Chiều",
+                    Role = "Cashier",
+                    IsActive = true
+                },
+                new User
+                {
+                    Id = 14,
+                    Username = "ware05",
+                    PasswordHash = samplePasswordHash,
+                    FullName = "Trương Vận Chuyển",
+                    Role = "Warehouse",
+                    IsActive = true
+                },
+                new User
+                {
+                    Id = 15,
+                    Username = "supervisor",
+                    PasswordHash = samplePasswordHash,
+                    FullName = "Mai Giám Sát",
+                    Role = "Admin",
+                    IsActive = true
+                }
+            );
 
             // Nạp sẵn 20 danh mục ban đầu vào SQL Server ngay khi tạo bảng
             modelBuilder.Entity<Category>().HasData(
