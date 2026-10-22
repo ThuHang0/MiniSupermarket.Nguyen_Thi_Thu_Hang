@@ -1,103 +1,110 @@
-# BÁO CÁO THỰC HÀNH
-
-**Môn học:** Lập trình Ứng dụng  
-**Mã môn:** 229162  
-**Buổi thực hành:** Buổi 4 – Thiết kế kiến trúc giao diện WinForms Shell và điều hướng phân quyền Admin / Cashier / Warehouse
-
-## 🏗️ 1. Mô hình Kiến trúc Hệ thống
-
-Dự án tiếp tục áp dụng mô hình **Client – Server**, sử dụng ASP.NET Core Web API làm Backend và Windows Forms làm Frontend. Dữ liệu được lưu trữ trong Microsoft SQL Server thông qua Entity Framework Core.
-
-Trong Buổi 4, giao diện được tổ chức theo mô hình **WinForms Shell**, sử dụng một Form chính chứa thanh điều hướng Sidebar và vùng hiển thị các Form chức năng.
-
-### Backend – MiniSupermarket.API
-
+BÁO CÁO THỰC HÀNH
+Môn học: Lập trình Ứng dụng
+Mã môn: 229162
+Buổi thực hành: Buổi 5 – ADO.NET nâng cao, Stored Procedure và giao dịch POS Checkout
+🏗️ 1. Mô hình Kiến trúc Hệ thống
+Dự án tiếp tục sử dụng mô hình Client – Server, với ASP.NET Core Web API làm Backend, WinForms làm Client và Microsoft SQL Server lưu trữ dữ liệu. Buổi 5 bổ sung ADO.NET trực tiếp bên cạnh EF Core, báo cáo bằng Stored Procedure và xử lý giao dịch thanh toán bằng SqlTransaction.
+Backend – MiniSupermarket.API
 Đóng vai trò máy chủ trung tâm, chịu trách nhiệm:
-
-- Cung cấp RESTful Web API phục vụ quản lý danh mục, sản phẩm và khách hàng.
-- Kết nối và thao tác với SQL Server thông qua Entity Framework Core.
-- Tiếp nhận yêu cầu từ ứng dụng WinForms và trả về dữ liệu JSON.
-- Xử lý các thao tác CRUD bằng LINQ và lập trình bất đồng bộ `async/await`.
-- Cung cấp Swagger UI để kiểm thử các API.
-
-### Frontend – MiniSupermarket.WinForms
-
+- Cung cấp RESTful Web API quản lý danh mục, sản phẩm, khách hàng, tài khoản và bán hàng.
+- Sử dụng SqlConnection, SqlCommand, SqlParameter để kết nối và truy vấn SQL Server an toàn.
+- Đếm sản phẩm bằng ExecuteScalar, cập nhật tồn kho bằng ExecuteNonQuery, đọc danh sách và tra cứu barcode bằng SqlDataReader.
+- Sử dụng DataTable và SqlDataAdapter để minh họa truy xuất dữ liệu theo mô hình ngắt kết nối.
+- Cung cấp API lọc sản phẩm tồn kho thấp và đếm sản phẩm theo danh mục.
+- Gọi Stored Procedure để báo cáo doanh thu theo thu ngân, khoảng ngày và Top 5 sản phẩm bán chạy.
+- Xử lý thanh toán trong cùng SqlTransaction: tạo hóa đơn, lưu chi tiết, trừ tồn kho và cộng điểm khách hàng.
+- Commit khi thành công, Rollback khi phát sinh lỗi; hỗ trợ hủy hóa đơn, hoàn kho và thu hồi điểm.
+- Lấy danh tính thu ngân từ JWT, lấy giá bán từ database và sử dụng RequestId để chống tạo trùng hóa đơn.
+- Quản lý thay đổi database và tạo Stored Procedure bằng EF Core Migrations; cung cấp Swagger UI để kiểm thử API.
+Frontend – MiniSupermarket.WinForms
 Đóng vai trò Client giao tiếp với người dùng, chịu trách nhiệm:
-
-- Sử dụng `FormMainShell` làm giao diện điều khiển trung tâm.
-- Hiển thị các nút chức năng trên Sidebar theo vai trò người dùng.
-- Nhúng các Form con vào `panelMainContent`.
-- Điều hướng giữa các màn hình mà không mở nhiều cửa sổ độc lập.
-- Gọi Backend thông qua `HttpClient` và xử lý dữ liệu JSON.
-- Hiển thị dữ liệu lên `DataGridView`, tiếp nhận thông tin nhập và thông báo kết quả xử lý.
-
-### Phân quyền giao diện
-
-| Vai trò | Chức năng được phép sử dụng |
-|---|---|
-| **Admin** | Danh mục, sản phẩm, khách hàng, POS, báo cáo doanh thu và quản trị tài khoản. |
-| **Cashier** | POS và quản lý khách hàng. |
-| **Warehouse** | Quản lý danh mục và sản phẩm. |
-
-Khi người dùng đăng nhập, hệ thống xác định vai trò để hiển thị các nút phù hợp và mở màn hình mặc định tương ứng.
-
-## 🛠️ 2. Công nghệ sử dụng
-
-### Ngôn ngữ và nền tảng
-
-- C#.
-- .NET 8.0.
-
-### Phía Server – Backend
-
+- Duy trì giao diện Shell và điều hướng chức năng theo vai trò Admin, Cashier, Warehouse.
+- Quản lý phiên đăng nhập và sử dụng ApiClientService dùng chung, gắn Bearer JWT vào yêu cầu HTTP.
+- Tra cứu barcode qua API ADO.NET, thêm sản phẩm vào giỏ và tra cứu khách hàng theo số điện thoại.
+- Hiển thị tổng tiền, tiền khách đưa, tiền thừa và gửi yêu cầu thanh toán đến Backend.
+- Hiển thị kết quả, giữ giỏ khi thanh toán lỗi và làm mới giao dịch sau khi thanh toán thành công.
+- Duy trì các màn hình quản lý và báo cáo nhanh đã có. Báo cáo Stored Procedure và API hủy hóa đơn được cung cấp phía Backend để kiểm thử trên Swagger.
+🛠️ 2. Công nghệ sử dụng
+Ngôn ngữ và nền tảng
+- C# và .NET 8.0.
+- Visual Studio 2022.
+Phía Server – Backend
 - ASP.NET Core Web API.
-- Entity Framework Core.
-- EF Core Code-First Migrations.
-- Dependency Injection.
-- LINQ và lập trình bất đồng bộ `async/await`.
-- Swagger / OpenAPI.
-
-### Cơ sở dữ liệu
-
-- Microsoft SQL Server.
-- SQL Server Management Studio – SSMS.
-
-### Phía Client – Frontend
-
+- ADO.NET với Microsoft.Data.SqlClient.
+- SqlConnection, SqlCommand, SqlParameter, SqlDataReader, SqlTransaction.
+- DataTable, SqlDataAdapter và CommandType.StoredProcedure.
+- Entity Framework Core SQL Server, Design và Tools; Code-First Migrations.
+- LINQ, async/await, Dependency Injection và Data Annotations.
+- JWT Authentication, phân quyền theo vai trò và Swagger / OpenAPI.
+Cơ sở dữ liệu
+- Microsoft SQL Server, SQL Server Management Studio (SSMS).
+- Stored Procedure, khóa ngoại và giao dịch dữ liệu.
+- Các bảng chính: Categories, Products, Customers, Users, Orders, OrderDetails.
+- Các thủ tục: sp_GetRevenueByCashier, sp_GetRevenueByDateRange, sp_GetTop5SellingProducts.
+Phía Client – Frontend
 - Windows Forms (.NET 8.0).
-- `HttpClient`.
-- `System.Net.Http.Json`.
-- Các thành phần giao diện: `Panel`, `Button`, `Label`, `TextBox`, `ComboBox`, `NumericUpDown` và `DataGridView`.
-- Thuộc tính `Dock` để bố trí Sidebar và vùng nội dung.
-- Thuộc tính `TopLevel`, `FormBorderStyle` và `Dock` để nhúng Form con.
-- Sự kiện `Click`, `Load` và `CellClick` để xử lý tương tác.
-
-## 📂 3. Cấu trúc Solution
-
-Các thành phần chính đã triển khai hoặc đang hoàn thiện trong Buổi 4:
-
-| Dự án / Thư mục | File | Chức năng |
-|---|---|---|
-| **MiniSupermarket.API / Controllers** | `CategoriesController.cs` | API quản lý danh mục. |
-| | `ProductsController.cs` | API quản lý và tra cứu sản phẩm. |
-| | `CustomersController.cs` | API quản lý khách hàng. |
-| **MiniSupermarket.API / Models** | `Category.cs` | Mô hình danh mục. |
-| | `Product.cs` | Mô hình sản phẩm. |
-| | `Customer.cs` | Mô hình khách hàng. |
-| **MiniSupermarket.API / Data** | `SupermarketDbContext.cs` | Kết nối và ánh xạ dữ liệu bằng EF Core. |
-| **MiniSupermarket.API / Migrations** | Các file Migration | Quản lý thay đổi cấu trúc cơ sở dữ liệu. |
-| **MiniSupermarket.API** | `appsettings.json`, `Program.cs` | Cấu hình kết nối và khởi tạo Backend. |
-| **MiniSupermarket.WinForms** | `FormMainShell.cs`, `FormMainShell.Designer.cs` | Giao diện chính, điều hướng và phân quyền. |
-| | `FormCategoryManagement.cs` | Quản lý danh mục. |
-| | `FormProductManagement.cs`, `FormProductManagement.Designer.cs` | Quản lý sản phẩm và tồn kho. |
-| | `FormCustomerManagement.cs`, `FormCustomerManagement.Designer.cs` | Quản lý khách hàng. |
-| | `FormPOS.cs`, `FormPOS.Designer.cs` | Giao diện bán hàng tại quầy. |
-| | `FormQuickReport.cs`, `FormQuickReport.Designer.cs` | Phần báo cáo doanh thu đang hoàn thiện. |
-| | `FormUserManagement.cs`, `FormUserManagement.Designer.cs` | Phần quản trị tài khoản đang hoàn thiện. |
-| | `Program.cs` | Điểm khởi chạy ứng dụng WinForms. |
-
-## 👨‍💻 4. Tác giả
-
-**Họ và tên:** Nguyễn Thị Thu Hằng  
-**Mã sinh viên:** 2124110115  
-**Lớp học phần:** CCQ2411D
+- HttpClient, System.Net.Http.Json và Bearer JWT.
+- DataGridView, BindingSource, BindingList, ComboBox và các điều khiển nhập liệu.
+📂 3. Cấu trúc Solution
+Cấu trúc các file chính liên quan đến ứng dụng và Buổi 5; lược bỏ các file mẫu, .resx, file build và một số file Migration tự sinh:
+MiniSupermarket.Nguyen_Thi_Thu_Hang/
+├── MiniSupermarket.Nguyen_Thi_Thu_Hang.sln
+├── README.md
+├── MiniSupermarket.API/
+│   ├── Controllers/
+│   │   ├── AdoProductController.cs
+│   │   ├── AuthController.cs
+│   │   ├── CategoriesController.cs
+│   │   ├── CustomersController.cs
+│   │   ├── OrdersController.cs
+│   │   ├── ProductsController.cs
+│   │   ├── ReportsController.cs
+│   │   ├── RolesController.cs
+│   │   └── UsersController.cs
+│   ├── Models/
+│   │   ├── CashierRevenueDto.cs
+│   │   ├── Category.cs
+│   │   ├── Customer.cs
+│   │   ├── Order.cs
+│   │   ├── OrderDetail.cs
+│   │   ├── Product.cs
+│   │   └── Role.cs
+│   ├── Migrations/
+│   │   ├── 20261022112136_AddOrderRewardPointsBuoi5.cs
+│   │   ├── 20261022112523_AddStoredProceduresBuoi5.cs
+│   │   └── SupermarketDbContextModelSnapshot.cs
+│   ├── Properties/
+│   │   └── launchSettings.json
+│   ├── SupermarketDbContext.cs
+│   ├── User.cs
+│   ├── appsettings.json
+│   ├── appsettings.Development.json
+│   ├── MiniSupermarket.API.csproj
+│   └── Program.cs
+└── MiniSupermarket.WinForms/
+    ├── FormLogin.cs
+    ├── FormLogin.Designer.cs
+    ├── FormMainShell.cs
+    ├── FormMainShell.Designer.cs
+    ├── FormCategoryManagement.cs
+    ├── FormCategoryManagement.Designer.cs
+    ├── FormProductManagement.cs
+    ├── FormProductManagement.Designer.cs
+    ├── FormCustomerManagement.cs
+    ├── FormCustomerManagement.Designer.cs
+    ├── FormPOS.cs
+    ├── FormPOS.Designer.cs
+    ├── FormQuickReport.cs
+    ├── FormQuickReport.Designer.cs
+    ├── FormUserManagement.cs
+    ├── FormUserManagement.Designer.cs
+    ├── FormRoleManagement.cs
+    ├── FormRoleManagement.Designer.cs
+    ├── SessionManager.cs
+    ├── MiniSupermarket.WinForms.csproj
+    └── Program.cs
+Trong cấu trúc hiện tại, SupermarketDbContext.cs và User.cs nằm trực tiếp trong project API. Lớp ApiClientService được khai báo trong SessionManager.cs của WinForms.
+👩‍💻 4. Tác giả
+Họ và tên: Nguyễn Thị Thu Hằng
+Mã sinh viên: 2124110115
+Lớp học phần: CCQ2411D
