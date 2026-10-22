@@ -22,6 +22,9 @@
         private Button btnUpdate = null!;
         private Button btnDelete = null!;
         private Button btnClear = null!;
+        private Button btnPrev = null!;
+        private Button btnNext = null!;
+        private Label lblPaging = null!;
 
         protected override void Dispose(bool disposing)
         {
@@ -51,6 +54,9 @@
             btnUpdate = new Button();
             btnDelete = new Button();
             btnClear = new Button();
+            btnPrev = new Button();
+            btnNext = new Button();
+            lblPaging = new Label();
 
             SuspendLayout();
 
@@ -210,7 +216,69 @@
 
             details.Controls.Add(actions, 0, 12);
 
-            body.Controls.Add(dgvProducts, 0, 0);
+            // Vùng bên trái: bảng sản phẩm và thanh phân trang.
+            var productsPanel = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 2,
+                Margin = new Padding(0)
+            };
+
+            productsPanel.ColumnStyles.Add(
+                new ColumnStyle(SizeType.Percent, 100F));
+
+            productsPanel.RowStyles.Add(
+                new RowStyle(SizeType.Percent, 100F));
+
+            productsPanel.RowStyles.Add(
+                new RowStyle(SizeType.Absolute, 60F));
+
+            // Thanh phân trang.
+            var pagingPanel = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                Padding = new Padding(8),
+                WrapContents = false,
+                AutoScroll = true,
+                BackColor = Color.White
+            };
+
+            ConfigureButton(
+                btnPrev,
+                "<< Trang trước",
+                Color.SteelBlue);
+
+            ConfigureButton(
+                btnNext,
+                "Trang sau >>",
+                Color.SteelBlue);
+
+            btnPrev.Name = "btnPrev";
+            btnNext.Name = "btnNext";
+
+            btnPrev.Enabled = false;
+            btnNext.Enabled = false;
+
+            lblPaging.Name = "lblPaging";
+            lblPaging.AutoSize = true;
+            lblPaging.Margin = new Padding(12, 12, 12, 0);
+            lblPaging.Text = "Chưa tải dữ liệu";
+
+            btnPrev.Click += btnPrev_Click;
+            btnNext.Click += btnNext_Click;
+
+            pagingPanel.Controls.AddRange(new Control[]
+            {
+    btnPrev,
+    lblPaging,
+    btnNext
+            });
+
+            productsPanel.Controls.Add(dgvProducts, 0, 0);
+            productsPanel.Controls.Add(pagingPanel, 0, 1);
+
+            body.Controls.Add(productsPanel, 0, 0);
             body.Controls.Add(details, 1, 0);
 
             AutoScaleMode = AutoScaleMode.Font;

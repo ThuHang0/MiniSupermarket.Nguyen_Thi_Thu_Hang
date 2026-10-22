@@ -6,10 +6,26 @@ namespace MiniSupermarket.WinForms
     public partial class FormProductManagement : Form
     {
         private bool _busy;
+        private int _currentPage = 1;
+        private readonly int _pageSize = 5;
+        private int _totalPages = 0;
+
+        // Điều kiện lọc đang được áp dụng.
+        private string _activeKeyword = string.Empty;
+        private int _activeCategoryId = 0;
 
         public FormProductManagement()
         {
             InitializeComponent();
+
+            cboFilterCategory.SelectionChangeCommitted +=
+                cboFilterCategory_SelectionChangeCommitted;
+        }
+        private async void cboFilterCategory_SelectionChangeCommitted(
+            object? sender,
+            EventArgs e)
+        {
+            await RunAsync(ApplyFiltersAsync);
         }
 
         private async void FormProductManagement_Load(
@@ -59,27 +75,61 @@ namespace MiniSupermarket.WinForms
             cboFilterCategory.DataSource = filterCategories;
         }
 
+        // Các thao tác CRUD cũ vẫn gọi phương thức này.
         private async Task LoadProductsAsync()
         {
-            string keyword = Uri.EscapeDataString(
-                txtSearchBarcode.Text.Trim());
+            await LoadProductsPageAsync(_currentPage);
+        }
 
-            int categoryId =
-                cboFilterCategory.SelectedItem is CategoryDto category
-                    ? category.CategoryId
-                    : 0;
+        // Gọi Backend để lấy một trang sản phẩm.
+        private async Task LoadProductsPageAsync(int pageNumber)
+        {
+            string keyword = Uri.EscapeDataString(_activeKeyword);
 
             string url =
-                $"products?keyword={keyword}&categoryId={categoryId}";
+                $"products/paged?keyword={keyword}" +
+                $"&categoryId={_activeCategoryId}" +
+                $"&pageNumber={pageNumber}" +
+                $"&pageSize={_pageSize}";
 
-            var products = await ApiClientService.Client
-                .GetFromJsonAsync<List<ProductDto>>(url)
-                ?? new List<ProductDto>();
+            using var response =
+                await ApiClientService.Client.GetAsync(url);
 
-            dgvProducts.DataSource = products;
+            await EnsureSuccessAsync(response);
+
+            var result = await response.Content
+                .ReadFromJsonAsync<PagedViewResult<ProductDto>>();
+
+            if (result == null)
+            {
+                throw new InvalidOperationException(
+                    "Không đọc được dữ liệu phân trang từ API.");
+            }
+
+            // Chỉ cập nhật trang khi API trả kết quả thành công.
+            _currentPage = result.CurrentPage;
+            _totalPages = result.TotalPages;
+
+            dgvProducts.DataSource = result.Items;
             dgvProducts.ClearSelection();
 
+            lblPaging.Text = result.TotalItems == 0
+                ? "Không có sản phẩm"
+                : $"Trang {_currentPage}/{_totalPages}" +
+                  $" — Tổng: {result.TotalItems} SP";
+
             ClearInputs();
+            UpdatePagingButtons();
+        }
+
+        // Cập nhật trạng thái các nút chuyển trang.
+        private void UpdatePagingButtons()
+        {
+            btnPrev.Enabled =
+                !_busy && _currentPage > 1;
+
+            btnNext.Enabled =
+                !_busy && _currentPage < _totalPages;
         }
 
         private void dgvProducts_CellClick(
@@ -226,7 +276,43 @@ namespace MiniSupermarket.WinForms
             object? sender,
             EventArgs e)
         {
-            await RunAsync(LoadProductsAsync);
+            await RunAsync(ApplyFiltersAsync);
+        }
+        private async void btnPrev_Click(
+        object? sender,
+        EventArgs e)
+            {
+                if (_busy || _currentPage <= 1)
+                    return;
+
+                await RunAsync(async () =>
+                {
+                    await LoadProductsPageAsync(_currentPage - 1);
+                });
+            }
+
+        private async void btnNext_Click(
+            object? sender,
+            EventArgs e)
+        {
+            if (_busy || _currentPage >= _totalPages)
+                return;
+
+            await RunAsync(async () =>
+            {
+                await LoadProductsPageAsync(_currentPage + 1);
+            });
+        }
+        private async Task ApplyFiltersAsync()
+        {
+            _activeKeyword = txtSearchBarcode.Text.Trim();
+
+            _activeCategoryId =
+                cboFilterCategory.SelectedItem is CategoryDto category
+                    ? category.CategoryId
+                    : 0;
+
+            await LoadProductsPageAsync(1);
         }
 
         private async void txtSearchBarcode_KeyDown(
@@ -237,7 +323,8 @@ namespace MiniSupermarket.WinForms
                 return;
 
             e.SuppressKeyPress = true;
-            await RunAsync(LoadProductsAsync);
+
+            await RunAsync(ApplyFiltersAsync);
         }
 
         private async void btnLoad_Click(
@@ -252,7 +339,10 @@ namespace MiniSupermarket.WinForms
 
                 cboFilterCategory.SelectedValue = 0;
 
-                await LoadProductsAsync();
+                _activeKeyword = string.Empty;
+                _activeCategoryId = 0;
+
+                await LoadProductsPageAsync(1);
             });
         }
 
@@ -317,6 +407,12 @@ namespace MiniSupermarket.WinForms
             btnSearch.Enabled = enabled;
             btnLoad.Enabled = enabled;
             btnClear.Enabled = enabled;
+
+            txtSearchBarcode.Enabled = enabled;
+            cboFilterCategory.Enabled = enabled;
+            dgvProducts.Enabled = enabled;
+
+            UpdatePagingButtons();
         }
 
         private static async Task EnsureSuccessAsync(
@@ -382,5 +478,17 @@ namespace MiniSupermarket.WinForms
         public int CategoryId { get; set; }
 
         public string CategoryName { get; set; } = string.Empty;
+    }
+    public class PagedViewResult<T>
+    {
+        public int CurrentPage { get; set; }
+
+        public int PageSize { get; set; }
+
+        public int TotalItems { get; set; }
+
+        public int TotalPages { get; set; }
+
+        public List<T> Items { get; set; } = new();
     }
 }

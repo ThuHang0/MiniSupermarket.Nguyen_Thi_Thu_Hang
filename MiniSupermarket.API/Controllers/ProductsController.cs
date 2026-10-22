@@ -5,6 +5,7 @@ using MiniSupermarket.API.Data;
 using MiniSupermarket.API.Models;
 using System.ComponentModel.DataAnnotations;
 
+
 namespace MiniSupermarket.API.Controllers
 {
     [ApiController]
@@ -17,6 +18,85 @@ namespace MiniSupermarket.API.Controllers
         public ProductsController(SupermarketDbContext context)
         {
             _context = context;
+        }
+        // GET /api/products/paged
+        [HttpGet("paged")]
+        public async Task<IActionResult> GetPagedProducts(
+            [FromQuery] string? keyword,
+            [FromQuery] int? categoryId,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 5)
+        {
+            // 1. Chuẩn hóa tham số đầu vào.
+            if (pageNumber < 1)
+                pageNumber = 1;
+
+            if (pageSize < 1 || pageSize > 50)
+                pageSize = 5;
+
+            // 2. Khởi tạo truy vấn và lấy quan hệ danh mục.
+            var query = _context.Products
+                .Include(p => p.Category)
+                .AsNoTracking()
+                .AsQueryable();
+
+            // 3. Tìm theo tên hoặc mã vạch.
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                string search = keyword.Trim();
+
+                query = query.Where(p =>
+                    p.ProductName.Contains(search) ||
+                    p.Barcode.Contains(search));
+            }
+
+            // 4. Lọc theo danh mục.
+            if (categoryId.HasValue && categoryId.Value > 0)
+            {
+                query = query.Where(p =>
+                    p.CategoryId == categoryId.Value);
+            }
+
+            // 5. Đếm sau khi áp dụng các điều kiện lọc.
+            int totalItems = await query.CountAsync();
+
+            int totalPages = (int)Math.Ceiling(
+                (double)totalItems / pageSize);
+
+            // Khi xóa hết sản phẩm của trang cuối,
+            // đưa người dùng về trang cuối còn tồn tại.
+            pageNumber = totalPages == 0
+                ? 1
+                : Math.Min(pageNumber, totalPages);
+
+            // 6. Chỉ lấy các sản phẩm thuộc trang yêu cầu.
+            var items = await query
+                .OrderBy(p => p.ProductId)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(p => new ProductItemDto
+                {
+                    ProductId = p.ProductId,
+                    Barcode = p.Barcode,
+                    ProductName = p.ProductName,
+                    Price = p.Price,
+                    StockQuantity = p.StockQuantity,
+                    CategoryId = p.CategoryId,
+                    CategoryName = p.Category != null
+                        ? p.Category.CategoryName
+                        : string.Empty
+                })
+                .ToListAsync();
+
+            // 7. Trả dữ liệu cùng thông tin phân trang.
+            return Ok(new PagedResult<ProductItemDto>
+            {
+                CurrentPage = pageNumber,
+                PageSize = pageSize,
+                TotalItems = totalItems,
+                TotalPages = totalPages,
+                Items = items
+            });
         }
 
         // GET /api/products?keyword=...&categoryId=...
