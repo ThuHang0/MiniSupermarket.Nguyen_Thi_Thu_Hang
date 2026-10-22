@@ -406,6 +406,9 @@ namespace MiniSupermarket.API.Migrations
                     b.Property<Guid>("RequestId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("RewardPoints")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)");
 

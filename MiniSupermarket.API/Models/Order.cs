@@ -11,6 +11,9 @@ namespace MiniSupermarket.API.Models
         // Ngăn lưu trùng khi gửi lại cùng yêu cầu thanh toán.
         public Guid RequestId { get; set; }
 
+        // Lưu điểm đã tặng để hủy đơn có thể thu hồi chính xác.
+        public int RewardPoints { get; set; }
+
         public DateTime OrderDate { get; set; }
 
         public int CashierId { get; set; }

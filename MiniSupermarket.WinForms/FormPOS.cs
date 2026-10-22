@@ -187,7 +187,7 @@ namespace MiniSupermarket.WinForms
             try
             {
                 string endpoint =
-                    "products/barcode/"
+                    "ado-products/barcode/"
                     + Uri.EscapeDataString(barcode);
 
                 using var response =
