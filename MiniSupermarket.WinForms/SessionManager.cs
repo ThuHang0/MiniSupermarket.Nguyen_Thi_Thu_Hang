@@ -1,5 +1,6 @@
 ﻿using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace MiniSupermarket.WinForms
 {
@@ -24,6 +25,46 @@ namespace MiniSupermarket.WinForms
 
     public static class ApiClientService
     {
+        public static async Task<string> ReadErrorMessageAsync(
+    HttpResponseMessage response)
+        {
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                return "Phiên đăng nhập không hợp lệ hoặc đã hết hạn. " +
+                       "Vui lòng đăng nhập lại.";
+            }
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+            {
+                return "Bạn không có quyền thực hiện chức năng này.";
+            }
+
+            string body = await response.Content.ReadAsStringAsync();
+
+            try
+            {
+                using var document = JsonDocument.Parse(body);
+                var root = document.RootElement;
+
+                if (root.ValueKind == JsonValueKind.Object &&
+                    root.TryGetProperty("message", out var message) &&
+                    message.ValueKind == JsonValueKind.String)
+                {
+                    string? text = message.GetString();
+
+                    if (!string.IsNullOrWhiteSpace(text))
+                        return text;
+                }
+            }
+            catch (JsonException)
+            {
+                // Phản hồi không phải JSON thì dùng thông báo bên dưới.
+            }
+
+            return $"Không thực hiện được yêu cầu. " +
+                   $"Mã lỗi HTTP: {(int)response.StatusCode}.";
+        }
+
         public static HttpClient Client { get; } = new HttpClient
         {
             BaseAddress = new Uri("https://localhost:7063/api/"),

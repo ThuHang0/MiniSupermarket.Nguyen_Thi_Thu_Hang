@@ -172,9 +172,22 @@ namespace MiniSupermarket.WinForms
                 return null;
             }
 
+            if (nudPrice.Value <= 0)
+            {
+                MessageBox.Show(
+                    "Giá bán phải lớn hơn 0.",
+                    "Dữ liệu không hợp lệ",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+
+                nudPrice.Focus();
+                return null;
+            }
+
             if (cboCategory.SelectedItem is not CategoryDto category)
             {
                 MessageBox.Show("Vui lòng chọn danh mục.");
+                cboCategory.Focus();
                 return null;
             }
 

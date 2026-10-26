@@ -27,8 +27,15 @@ namespace MiniSupermarket.WinForms
             _httpClient = ApiClientService.Client;
         }
 
-        private async void FormCustomerManagement_Load(object sender, EventArgs e)
+        private async void FormCustomerManagement_Load(
+            object sender,
+            EventArgs e)
         {
+            bool isAdmin = SessionManager.CurrentRole == "Admin";
+
+            txtRewardPoints.ReadOnly = !isAdmin;
+            txtMembershipRank.ReadOnly = !isAdmin;
+
             await LoadCustomers();
         }
 
@@ -51,90 +58,243 @@ namespace MiniSupermarket.WinForms
                 MessageBox.Show("Lỗi khi tải dữ liệu: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+        private async Task SaveCustomerAsync(
+    Func<Task<HttpResponseMessage>> sendRequest,
+    string successMessage)
+        {
+            btnAdd.Enabled = false;
+            btnUpdate.Enabled = false;
+
+            try
+            {
+                using var response = await sendRequest();
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    string message =
+                        await ApiClientService.ReadErrorMessageAsync(response);
+
+                    MessageBox.Show(
+                        message,
+                        "Không thể lưu khách hàng",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+
+                    return;
+                }
+
+                MessageBox.Show(
+                    successMessage,
+                    "Thông báo",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+
+                ClearInputs();
+                await LoadCustomers();
+            }
+            catch (HttpRequestException)
+            {
+                MessageBox.Show(
+                    "Không kết nối được API. Hãy kiểm tra kết nối " +
+                    "và tải lại danh sách trước khi thử lại.",
+                    "Lỗi kết nối",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+            catch (TaskCanceledException)
+            {
+                MessageBox.Show(
+                    "Yêu cầu quá thời gian chờ. Hãy tải lại danh sách " +
+                    "để kiểm tra dữ liệu đã được lưu chưa.",
+                    "Thông báo",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Không hoàn tất được thao tác: " + ex.Message,
+                    "Lỗi",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+            finally
+            {
+                if (!IsDisposed)
+                {
+                    btnAdd.Enabled = true;
+                    btnUpdate.Enabled = true;
+                }
+            }
+        }
+        private Customer? ReadCustomerInputs()
+        {
+            string name = txtCustomerName.Text.Trim();
+            string phone = txtPhoneNumber.Text.Trim();
+            string rank = txtMembershipRank.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                MessageBox.Show("Vui lòng nhập tên khách hàng.");
+                txtCustomerName.Focus();
+                return null;
+            }
+
+            if (string.IsNullOrWhiteSpace(phone))
+            {
+                MessageBox.Show("Vui lòng nhập số điện thoại.");
+                txtPhoneNumber.Focus();
+                return null;
+            }
+
+            if (!int.TryParse(txtRewardPoints.Text, out int points) ||
+                points < 0)
+            {
+                MessageBox.Show("Điểm thưởng phải là số nguyên không âm.");
+                txtRewardPoints.Focus();
+                return null;
+            }
+
+            if (string.IsNullOrWhiteSpace(rank))
+            {
+                MessageBox.Show("Vui lòng nhập hạng khách hàng.");
+                txtMembershipRank.Focus();
+                return null;
+            }
+
+            return new Customer
+            {
+                CustomerName = name,
+                PhoneNumber = phone,
+                Address = txtAddress.Text.Trim(),
+                RewardPoints = points,
+                MembershipRank = rank
+            };
+        }
 
         // 2. Nút Thêm mới (POST)
         private async void btnAdd_Click(object sender, EventArgs e)
         {
-            var newCustomer = new Customer
-            {
-                CustomerName = txtCustomerName.Text,
-                PhoneNumber = txtPhoneNumber.Text,
-                Address = txtAddress.Text,
-                RewardPoints = int.TryParse(txtRewardPoints.Text, out int points) ? points : 0,
-                MembershipRank = string.IsNullOrWhiteSpace(txtMembershipRank.Text) ? "Chuẩn" : txtMembershipRank.Text
-            };
+            var customer = ReadCustomerInputs();
 
-            var response = await _httpClient.PostAsJsonAsync("customers", newCustomer);
-            if (response.IsSuccessStatusCode)
+            if (customer == null)
+                return;
+
+            if (SessionManager.CurrentRole == "Cashier")
             {
-                MessageBox.Show("Thêm khách hàng thành công!");
-                await LoadCustomers();
-                ClearInputs();
+                customer.RewardPoints = 0;
+                customer.MembershipRank = "Chuẩn";
             }
-            else
-            {
-                MessageBox.Show("Thêm thất bại. Vui lòng kiểm tra lại thông tin!");
-            }
+
+            await SaveCustomerAsync(
+                () => ApiClientService.Client.PostAsJsonAsync(
+                    "customers",
+                    customer),
+                "Thêm khách hàng thành công!");
         }
 
         // 3. Nút Cập nhật (PUT)
         private async void btnUpdate_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(txtCustomerId.Text))
+            if (!int.TryParse(txtCustomerId.Text, out int id) || id <= 0)
             {
-                MessageBox.Show("Vui lòng chọn khách hàng cần sửa từ danh sách!");
+                MessageBox.Show("Vui lòng chọn khách hàng cần sửa.");
                 return;
             }
 
-            int id = int.Parse(txtCustomerId.Text);
-            var updatedCustomer = new Customer
-            {
-                CustomerId = id,
-                CustomerName = txtCustomerName.Text,
-                PhoneNumber = txtPhoneNumber.Text,
-                Address = txtAddress.Text,
-                RewardPoints = int.TryParse(txtRewardPoints.Text, out int points) ? points : 0,
-                MembershipRank = txtMembershipRank.Text
-            };
+            var customer = ReadCustomerInputs();
 
-            var response = await _httpClient.PutAsJsonAsync($"customers/{id}", updatedCustomer);
-            if (response.IsSuccessStatusCode)
-            {
-                MessageBox.Show("Cập nhật thông tin thành công!");
-                await LoadCustomers();
-            }
-            else
-            {
-                MessageBox.Show("Cập nhật thất bại!");
-            }
+            if (customer == null)
+                return;
+
+            customer.CustomerId = id;
+
+            await SaveCustomerAsync(
+                () => ApiClientService.Client.PutAsJsonAsync(
+                    $"customers/{id}",
+                    customer),
+                "Cập nhật khách hàng thành công!");
         }
 
         // 4. Nút Xóa (DELETE)
         private async void btnDelete_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(txtCustomerId.Text))
+            if (!int.TryParse(txtCustomerId.Text, out int id) || id <= 0)
             {
-                MessageBox.Show("Vui lòng chọn khách hàng cần xóa!");
+                MessageBox.Show("Vui lòng chọn khách hàng cần xóa.");
                 return;
             }
 
-            var confirmResult = MessageBox.Show("Bạn có chắc chắn muốn xóa khách hàng này?",
-                                     "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
-            if (confirmResult == DialogResult.Yes)
-            {
-                int id = int.Parse(txtCustomerId.Text);
-                var response = await _httpClient.DeleteAsync($"customers/{id}");
+            var confirm = MessageBox.Show(
+                "Bạn có chắc muốn xóa khách hàng này?",
+                "Xác nhận xóa",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
 
-                if (response.IsSuccessStatusCode)
+            if (confirm != DialogResult.Yes)
+                return;
+
+            btnDelete.Enabled = false;
+
+            try
+            {
+                using var response = await ApiClientService.Client
+                    .DeleteAsync($"customers/{id}");
+
+                if (!response.IsSuccessStatusCode)
                 {
-                    MessageBox.Show("Xóa khách hàng thành công!");
-                    await LoadCustomers();
-                    ClearInputs();
+                    string message =
+                        await ApiClientService.ReadErrorMessageAsync(response);
+
+                    MessageBox.Show(
+                        message,
+                        "Không thể xóa khách hàng",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+
+                    return;
                 }
-                else
-                {
-                    MessageBox.Show("Xóa thất bại!");
-                }
+
+                ClearInputs();
+
+                MessageBox.Show(
+                    "Xóa khách hàng thành công!",
+                    "Thông báo",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+
+                await LoadCustomers();
+            }
+            catch (HttpRequestException)
+            {
+                MessageBox.Show(
+                    "Không kết nối được máy chủ. " +
+                    "Hãy kiểm tra API và tải lại danh sách để xác nhận kết quả.",
+                    "Lỗi kết nối",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+            catch (TaskCanceledException)
+            {
+                MessageBox.Show(
+                    "Yêu cầu quá thời gian chờ. " +
+                    "Hãy tải lại danh sách để kiểm tra kết quả xóa.",
+                    "Thông báo",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Không hoàn tất được thao tác: " + ex.Message,
+                    "Lỗi",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+            finally
+            {
+                if (!IsDisposed)
+                    btnDelete.Enabled = true;
             }
         }
 
@@ -183,6 +343,8 @@ namespace MiniSupermarket.WinForms
             txtAddress.Clear();
             txtRewardPoints.Clear();
             txtMembershipRank.Clear();
+            txtRewardPoints.Text = "0";
+            txtMembershipRank.Text = "Chuẩn";
         }
 
         private void dgvCustomers_CellContentClick(object sender, DataGridViewCellEventArgs e)

@@ -198,6 +198,9 @@ namespace MiniSupermarket.API.Migrations
 
                     b.HasKey("CustomerId");
 
+                    b.HasIndex("PhoneNumber")
+                        .IsUnique();
+
                     b.ToTable("Customers");
 
                     b.HasData(

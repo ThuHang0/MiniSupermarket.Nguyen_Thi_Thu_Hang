@@ -2,11 +2,14 @@
 using Microsoft.EntityFrameworkCore;
 using MiniSupermarket.API.Data;
 using MiniSupermarket.API.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Data.SqlClient;
 
 namespace MiniSupermarket.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Admin,Warehouse")]
     public class CategoriesController : ControllerBase
     {
         private readonly SupermarketDbContext _context;
@@ -88,15 +91,43 @@ namespace MiniSupermarket.API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var cat = await _context.Categories.FindAsync(id);
-            if (cat == null)
+            var category = await _context.Categories.FindAsync(id);
+
+            if (category == null)
             {
-                return NotFound(new { message = "Không tìm thấy nhóm hàng cần xóa!" });
+                return NotFound(new
+                {
+                    message = "Không tìm thấy danh mục cần xóa."
+                });
             }
 
-            _context.Categories.Remove(cat);
-            await _context.SaveChangesAsync();
-            return NoContent();
+            bool hasProducts = await _context.Products
+                .AnyAsync(p => p.CategoryId == id);
+
+            if (hasProducts)
+            {
+                return Conflict(new
+                {
+                    message = "Danh mục đang có sản phẩm. " +
+                              "Hãy chuyển sản phẩm sang danh mục khác trước khi xóa."
+                });
+            }
+
+            _context.Categories.Remove(category);
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                return NoContent();
+            }
+            catch (DbUpdateException ex)
+                when (ex.InnerException is SqlException sql && sql.Number == 547)
+            {
+                return Conflict(new
+                {
+                    message = "Danh mục đang được sử dụng, không thể xóa."
+                });
+            }
         }
     }
 }

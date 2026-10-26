@@ -5,6 +5,8 @@ using MiniSupermarket.API.Data;
 using MiniSupermarket.API.Models;
 using System.ComponentModel.DataAnnotations;
 
+using Microsoft.Data.SqlClient;
+
 
 namespace MiniSupermarket.API.Controllers
 {
@@ -269,15 +271,40 @@ namespace MiniSupermarket.API.Controllers
             var product = await _context.Products.FindAsync(id);
 
             if (product == null)
+            {
                 return NotFound(new
                 {
                     message = "Không tìm thấy sản phẩm cần xóa."
                 });
+            }
+
+            bool hasOrderDetails = await _context.OrderDetails
+                .AnyAsync(d => d.ProductId == id);
+
+            if (hasOrderDetails)
+            {
+                return Conflict(new
+                {
+                    message = "Sản phẩm đã có trong hóa đơn. " +
+                              "Không thể xóa để bảo toàn lịch sử bán hàng."
+                });
+            }
 
             _context.Products.Remove(product);
-            await _context.SaveChangesAsync();
 
-            return NoContent();
+            try
+            {
+                await _context.SaveChangesAsync();
+                return NoContent();
+            }
+            catch (DbUpdateException ex)
+                when (ex.InnerException is SqlException sql && sql.Number == 547)
+            {
+                return Conflict(new
+                {
+                    message = "Sản phẩm đang được sử dụng, không thể xóa."
+                });
+            }
         }
 
         private async Task<string?> ValidateRequestAsync(
@@ -290,10 +317,14 @@ namespace MiniSupermarket.API.Controllers
             if (string.IsNullOrWhiteSpace(request.ProductName))
                 return "Tên sản phẩm không được để trống.";
 
-            if (request.Price < 0 ||
-                decimal.Round(request.Price, 2) != request.Price)
+            if (request.Price <= 0)
             {
-                return "Giá phải không âm và có tối đa 2 số thập phân.";
+                return "Giá bán phải lớn hơn 0.";
+            }
+
+            if (decimal.Round(request.Price, 2) != request.Price)
+            {
+                return "Giá bán chỉ được có tối đa 2 chữ số thập phân.";
             }
 
             if (request.StockQuantity < 0)
@@ -329,7 +360,11 @@ namespace MiniSupermarket.API.Controllers
         [StringLength(150)]
         public string ProductName { get; set; } = string.Empty;
 
-        [Range(typeof(decimal), "0", "9999999999999999.99")]
+        [Range(
+            typeof(decimal),
+            "0.01",
+            "9999999999999999.99",
+            ErrorMessage = "Giá bán phải lớn hơn 0.")]
         public decimal Price { get; set; }
 
         [Range(0, int.MaxValue)]

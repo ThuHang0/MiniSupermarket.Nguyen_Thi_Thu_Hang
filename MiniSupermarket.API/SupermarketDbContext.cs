@@ -25,7 +25,9 @@ namespace MiniSupermarket.API.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
+            modelBuilder.Entity<Customer>()
+    .HasIndex(c => c.PhoneNumber)
+    .IsUnique();
             modelBuilder.Entity<Order>()
     .HasIndex(o => o.RequestId)
     .IsUnique();

@@ -6,18 +6,33 @@ namespace MiniSupermarket.WinForms
     public partial class FormRoleManagement : Form
     {
         // Kết nối đến API /api/roles (Đảm bảo Port khớp với Backend của bạn)
-        private static readonly HttpClient _client = new HttpClient
-        {
-            BaseAddress = new Uri("https://localhost:7063/api/")
-        };
+        //private static readonly HttpClient _client = new HttpClient
+        //{
+        //    BaseAddress = new Uri("//https://localhost:7063/api/")
+        //};
+        private static HttpClient _client => ApiClientService.Client;
 
         public FormRoleManagement()
         {
             InitializeComponent();
         }
 
-        private async void FormRoleManagement_Load(object sender, EventArgs e)
+        private async void FormRoleManagement_Load(
+            object sender,
+            EventArgs e)
         {
+            if (SessionManager.CurrentRole != "Admin")
+            {
+                MessageBox.Show(
+                    "Chỉ Admin được quản lý vai trò.",
+                    "Không có quyền",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+
+                Close();
+                return;
+            }
+
             await LoadRolesAsync();
         }
 

@@ -128,7 +128,9 @@ public class OrdersController : ControllerBase
                     price = Convert.ToDecimal(reader["Price"]);
                     stock = Convert.ToInt32(reader["StockQuantity"]);
                 }
-                if (price < 0) throw new InvalidOperationException("Giá sản phẩm không hợp lệ.");
+                if (price <= 0)
+                    throw new InvalidOperationException(
+                        "Giá sản phẩm phải lớn hơn 0.");
                 if (stock < quantity) throw new InvalidOperationException($"{name} không đủ tồn kho: còn {stock}, mua {quantity}.");
                 total += price * quantity;
                 totalItems += (int)quantity;

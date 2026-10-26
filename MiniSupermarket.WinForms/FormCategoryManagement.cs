@@ -7,20 +7,6 @@ namespace MiniSupermarket.WinForms
     public partial class FormCategoryManagement : Form
     {
         // Bổ sung phương thức cấu hình HttpClient có gắn kèm Token bảo mật
-        private HttpClient GetAuthenticatedClient()
-        {
-            var client = new HttpClient
-            {
-                BaseAddress = new Uri("https://localhost:7063/api/")
-            };
-
-            // Đính kèm Token vào Header theo chuẩn Bearer Authentication
-            if (!string.IsNullOrEmpty(SessionManager.JwtToken))
-            {
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", SessionManager.JwtToken);
-            }
-            return client;
-        }
 
 
         public FormCategoryManagement()
@@ -39,13 +25,82 @@ namespace MiniSupermarket.WinForms
         {
             try
             {
-                using var client = GetAuthenticatedClient(); // Sử dụng client đã gắn token
-                var categories = await client.GetFromJsonAsync<List<CategoryDto>>("categories");
+                var categories = await ApiClientService.Client
+                    .GetFromJsonAsync<List<CategoryDto>>("categories");
                 dgvCategories.DataSource = categories;
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Lỗi quyền truy cập hoặc mất kết nối: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        private async Task SaveCategoryAsync(
+    Func<Task<HttpResponseMessage>> sendRequest,
+    string successMessage)
+        {
+            btnAdd.Enabled = false;
+            btnUpdate.Enabled = false;
+
+            try
+            {
+                using var response = await sendRequest();
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    string message =
+                        await ApiClientService.ReadErrorMessageAsync(response);
+
+                    MessageBox.Show(
+                        message,
+                        "Không thể lưu danh mục",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+
+                    return;
+                }
+
+                MessageBox.Show(
+                    successMessage,
+                    "Thông báo",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+
+                ClearInputs();
+                await LoadDataAsync();
+            }
+            catch (HttpRequestException)
+            {
+                MessageBox.Show(
+                    "Không kết nối được API. Hãy kiểm tra kết nối " +
+                    "và tải lại danh sách trước khi thử lại.",
+                    "Lỗi kết nối",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+            catch (TaskCanceledException)
+            {
+                MessageBox.Show(
+                    "Yêu cầu quá thời gian chờ. Hãy tải lại danh sách " +
+                    "để kiểm tra dữ liệu đã được lưu chưa.",
+                    "Thông báo",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Không hoàn tất được thao tác: " + ex.Message,
+                    "Lỗi",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+            finally
+            {
+                if (!IsDisposed)
+                {
+                    btnAdd.Enabled = true;
+                    btnUpdate.Enabled = true;
+                }
             }
         }
 
@@ -58,7 +113,8 @@ namespace MiniSupermarket.WinForms
         // Sự kiện khi click vào một dòng trên DataGridView: Đưa dữ liệu lên các ô nhập (TextBox) để chuẩn bị Sửa/Xóa
         private void dgvCategories_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex >= 0)
+            if (e.RowIndex >= 0 &&
+                !dgvCategories.Rows[e.RowIndex].IsNewRow)
             {
                 DataGridViewRow row = dgvCategories.Rows[e.RowIndex];
 
@@ -72,84 +128,168 @@ namespace MiniSupermarket.WinForms
         // Nút THÊM MỚI (CREATE): Gửi dữ liệu POST lên Web API
         private async void btnAdd_Click(object sender, EventArgs e)
         {
-            var newCat = new
+            string name = txtCategoryName.Text.Trim();
+            string description = txtDescription.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(name))
             {
-                CategoryName = txtCategoryName.Text,
-                Description = txtDescription.Text
+                MessageBox.Show("Vui lòng nhập tên danh mục.");
+                txtCategoryName.Focus();
+                return;
+            }
+
+            if (name.Length > 100)
+            {
+                MessageBox.Show("Tên danh mục không được vượt quá 100 ký tự.");
+                txtCategoryName.Focus();
+                return;
+            }
+
+            if (description.Length > 255)
+            {
+                MessageBox.Show("Mô tả không được vượt quá 255 ký tự.");
+                txtDescription.Focus();
+                return;
+            }
+
+            var category = new
+            {
+                CategoryName = name,
+                Description = description
             };
 
-            // Gửi request POST kèm theo đối tượng dạng JSON
-            using var client = GetAuthenticatedClient();
-            var response = await client.PostAsJsonAsync("categories", newCat);
-            if (response.IsSuccessStatusCode)
-            {
-                MessageBox.Show("Thêm mới thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                await LoadDataAsync(); // Tải lại danh sách mới
-                ClearInputs();         // Xóa sạch ô nhập
-            }
-            else
-            {
-                MessageBox.Show("Thêm mới thất bại!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
+            await SaveCategoryAsync(
+                () => ApiClientService.Client.PostAsJsonAsync(
+                    "categories",
+                    category),
+                "Thêm danh mục thành công!");
         }
 
         // Nút CẬP NHẬT (UPDATE): Gửi dữ liệu PUT lên Web API theo ID
         private async void btnUpdate_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(txtId.Text))
+            if (!int.TryParse(txtId.Text, out int id) || id <= 0)
             {
-                MessageBox.Show("Vui lòng chọn nhóm hàng cần sửa!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Vui lòng chọn danh mục cần sửa.");
                 return;
             }
 
-            int id = int.Parse(txtId.Text);
-            var updateCat = new
+            string name = txtCategoryName.Text.Trim();
+            string description = txtDescription.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                MessageBox.Show("Vui lòng nhập tên danh mục.");
+                txtCategoryName.Focus();
+                return;
+            }
+
+            if (name.Length > 100)
+            {
+                MessageBox.Show("Tên danh mục không được vượt quá 100 ký tự.");
+                txtCategoryName.Focus();
+                return;
+            }
+
+            if (description.Length > 255)
+            {
+                MessageBox.Show("Mô tả không được vượt quá 255 ký tự.");
+                txtDescription.Focus();
+                return;
+            }
+
+            var category = new
             {
                 CategoryId = id,
-                CategoryName = txtCategoryName.Text,
-                Description = txtDescription.Text
+                CategoryName = name,
+                Description = description
             };
 
-            // Gửi request PUT kèm ID trên đường dẫn URI
-            using var client = GetAuthenticatedClient();
-            var response = await client.PutAsJsonAsync($"categories/{id}", updateCat);
-            if (response.IsSuccessStatusCode)
-            {
-                MessageBox.Show("Cập nhật thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                await LoadDataAsync();
-                ClearInputs();
-            }
-            else
-            {
-                MessageBox.Show("Cập nhật thất bại!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
+            await SaveCategoryAsync(
+                () => ApiClientService.Client.PutAsJsonAsync(
+                    $"categories/{id}",
+                    category),
+                "Cập nhật danh mục thành công!");
         }
-
         // Nút XÓA (DELETE): Gửi request DELETE lên Web API theo ID
         private async void btnDelete_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(txtId.Text))
+            if (!int.TryParse(txtId.Text, out int id) || id <= 0)
             {
-                MessageBox.Show("Vui lòng chọn nhóm hàng cần xóa!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Vui lòng chọn danh mục cần xóa.");
                 return;
             }
 
-            int id = int.Parse(txtId.Text);
-            var confirm = MessageBox.Show($"Bạn có chắc muốn xóa nhóm hàng ID = {id}?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-            if (confirm == DialogResult.Yes)
+            var confirm = MessageBox.Show(
+                $"Bạn có chắc muốn xóa danh mục ID = {id}?",
+                "Xác nhận xóa",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            if (confirm != DialogResult.Yes)
+                return;
+
+            btnDelete.Enabled = false;
+
+            try
             {
-                using var client = GetAuthenticatedClient();
-                var response = await client.DeleteAsync($"categories/{id}");
-                if (response.IsSuccessStatusCode)
+                using var response = await ApiClientService.Client
+                    .DeleteAsync($"categories/{id}");
+
+                if (!response.IsSuccessStatusCode)
                 {
-                    MessageBox.Show("Xóa thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    await LoadDataAsync();
-                    ClearInputs();
+                    string message =
+                        await ApiClientService.ReadErrorMessageAsync(response);
+
+                    MessageBox.Show(
+                        message,
+                        "Không thể xóa danh mục",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+
+                    return;
                 }
-                else
-                {
-                    MessageBox.Show("Xóa thất bại!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
+
+                ClearInputs();
+
+                MessageBox.Show(
+                    "Xóa danh mục thành công!",
+                    "Thông báo",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+
+                await LoadDataAsync();
+            }
+            catch (HttpRequestException)
+            {
+                MessageBox.Show(
+                    "Không kết nối được máy chủ. " +
+                    "Hãy kiểm tra API và tải lại danh sách để xác nhận kết quả.",
+                    "Lỗi kết nối",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+            catch (TaskCanceledException)
+            {
+                MessageBox.Show(
+                    "Yêu cầu quá thời gian chờ. " +
+                    "Hãy tải lại danh sách để kiểm tra kết quả xóa.",
+                    "Thông báo",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Không hoàn tất được thao tác: " + ex.Message,
+                    "Lỗi",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+            finally
+            {
+                if (!IsDisposed)
+                    btnDelete.Enabled = true;
             }
         }
 
@@ -157,22 +297,76 @@ namespace MiniSupermarket.WinForms
         private async void btnSearch_Click(object sender, EventArgs e)
         {
             string keyword = txtKeyword.Text.Trim();
-            if (string.IsNullOrEmpty(keyword))
+
+            if (string.IsNullOrWhiteSpace(keyword))
             {
-                await LoadDataAsync(); // Nếu ô tìm kiếm trống thì tải lại toàn bộ
+                await LoadDataAsync();
                 return;
             }
 
+            btnSearch.Enabled = false;
+
             try
             {
-                // Gọi API dạng: GET /api/categories/search?keyword=abc
-                using var client = GetAuthenticatedClient();
-                var result = await client.GetFromJsonAsync<List<CategoryDto>>($"categories/search?keyword={keyword}");
-                dgvCategories.DataSource = result;
+                using var response = await ApiClientService.Client.GetAsync(
+                    $"categories/search?keyword={Uri.EscapeDataString(keyword)}");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    string message =
+                        await ApiClientService.ReadErrorMessageAsync(response);
+
+                    MessageBox.Show(
+                        message,
+                        "Không thể tìm kiếm",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+
+                    return;
+                }
+
+                var result = await response.Content
+                    .ReadFromJsonAsync<List<CategoryDto>>();
+
+                dgvCategories.DataSource = result ?? new List<CategoryDto>();
+
+                if (result == null || result.Count == 0)
+                {
+                    MessageBox.Show(
+                        "Không tìm thấy danh mục phù hợp.",
+                        "Thông báo",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+                }
             }
-            catch (Exception)
+            catch (HttpRequestException)
             {
-                MessageBox.Show("Không tìm thấy kết quả phù hợp!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(
+                    "Không kết nối được API. Hãy kiểm tra máy chủ.",
+                    "Lỗi kết nối",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+            catch (TaskCanceledException)
+            {
+                MessageBox.Show(
+                    "Tìm kiếm quá thời gian chờ. Vui lòng thử lại.",
+                    "Thông báo",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Không thực hiện được tìm kiếm: " + ex.Message,
+                    "Lỗi",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+            finally
+            {
+                if (!IsDisposed)
+                    btnSearch.Enabled = true;
             }
         }
 
